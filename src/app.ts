@@ -1,3 +1,4 @@
+import bodyParser from "body-parser";
 import express from "express";
 import { BaseController } from "./controllers/abstractions/base-controller";
 import errorMiddleware from "./middlewares/error.middleware";
@@ -13,6 +14,7 @@ class App {
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
     this.initializeErrorHandling();
+    this.initializeMore();
   }
 
   private initializeMiddlewares() {
@@ -21,6 +23,15 @@ class App {
 
   private initializeErrorHandling() {
     this.app.use(errorMiddleware);
+  }
+
+  private initializeMore() {
+    this.app.use(bodyParser.json());
+    // this.app.use(cors());
+    this.app.use((req, res, next) => {
+      res.set("Cache-Control", "no-store");
+      next();
+    });
   }
 
   private initializeControllers(controllers: BaseController[]) {
