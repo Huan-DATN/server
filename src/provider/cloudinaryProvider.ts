@@ -1,6 +1,6 @@
 import cloudinary from "cloudinary";
 import streamifier from "streamifier";
-import Config from "../config";
+import envConfig from "../config";
 
 /**
  * Tài liệu tham khảo
@@ -10,9 +10,9 @@ import Config from "../config";
 // Bước cấu hình cloudinary, sử dụng v2 - version 2
 const cloudinaryV2 = cloudinary.v2;
 cloudinaryV2.config({
-  cloud_name: Config.cloudinary.cloudName,
-  api_key: Config.cloudinary.apiKey,
-  api_secret: Config.cloudinary.apiSecret,
+  cloud_name: envConfig.CLOUDINARY_CLOUD_NAME,
+  api_key: envConfig.CLOUDINARY_API_KEY,
+  api_secret: envConfig.CLOUDINARY_API_SECRET,
 });
 
 // Khởi tạo một cái function để thực hiện upload file lên Cloudinary

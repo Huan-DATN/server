@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import multer from "multer";
-import HttpException from "../exceptions/http-exception";
+import { StatusError } from "../utils/errors";
 import {
   ALLOW_COMMON_FILE_TYPES,
   LIMIT_COMMON_FILE_SIZE,
@@ -22,7 +22,10 @@ const customFileFilter = (
   if (!ALLOW_COMMON_FILE_TYPES.includes(file.mimetype)) {
     const errMessage = "File type is invalid. Only accept jpg, jpeg and png";
     return callback(
-      new HttpException(StatusCodes.UNSUPPORTED_MEDIA_TYPE, errMessage),
+      new StatusError({
+        message: errMessage,
+        status: StatusCodes.UNSUPPORTED_MEDIA_TYPE,
+      }),
     );
   }
   // Nếu như kiểu file hợp lệ:
