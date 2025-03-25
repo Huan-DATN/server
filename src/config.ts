@@ -4,12 +4,13 @@ import { z } from "zod";
 dotenv.config();
 
 const configSchema = z.object({
-  PORT: z.coerce.number(),
+  PORT: z.coerce.number().default(3000),
   DB_HOST: z.string().default("localhost"),
   DB_PORT: z.coerce.number().default(5432),
   DB_USER: z.string().default("postgres"),
   DB_PASSWORD: z.string().default("postgres"),
   DB_NAME: z.string().default("postgres"),
+  DB_URL: z.string().default(""),
   SESSION_TOKEN_EXPIRES_IN: z.string().default("1d"),
   SESSION_TOKEN_SECRET: z.string().default("secret"),
   CLOUDINARY_CLOUD_NAME: z.string().default(""),

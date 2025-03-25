@@ -3,6 +3,7 @@ import express from "express";
 import ms from "ms";
 import envConfig from "../config";
 import { PrismaErrorCode } from "../constants/error-reference";
+import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import {
   LoginBodyType,
   RegisterBodyType,
@@ -24,6 +25,11 @@ export default class AuthController extends BaseController {
     // Bạn có thể thêm put, patch, delete sau.
     this.router.post(`${this.path}/login`, this.login);
     this.router.post(`${this.path}/register`, this.register);
+    this.router.post(
+      `${this.path}/slide-session`,
+      checkLoggedInMiddleware,
+      this.slideSession,
+    );
   }
 
   //#region Login
@@ -78,7 +84,6 @@ export default class AuthController extends BaseController {
     try {
       const body = request.body as LoginBodyType;
       const { account, session } = await this.validateLogin(body);
-      console.log(body);
       return response.json({
         data: {
           token: session.token,
@@ -156,6 +161,49 @@ export default class AuthController extends BaseController {
           expiresAt: session.expiresAt.toISOString(),
           account,
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  //#endregion
+
+  //#region slideSessionToken
+  /**
+   * Tăng thời gian hết hạn của session token lên
+   * @param sessionToken
+   */
+  slideSessionService = async (sessionToken: string) => {
+    const expiresAt = addMilliseconds(
+      new Date(),
+      ms(envConfig.SESSION_TOKEN_EXPIRES_IN as any) as any,
+    );
+    const session = await this.prisma.session.update({
+      where: {
+        token: sessionToken,
+      },
+      data: {
+        expiresAt,
+      },
+    });
+    return session;
+  };
+
+  slideSession = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const sessionToken = request.headers.authorization?.split(" ")[1];
+      const session = await this.slideSessionService(sessionToken as string);
+
+      return response.json({
+        data: {
+          token: session.token,
+          expiresAt: session.expiresAt,
+        },
+        message: "Refresh session thành công",
       });
     } catch (error) {
       next(error);

@@ -9,24 +9,15 @@ import {
 } from "../utils/errors";
 
 const isEntityError = (error: any): error is EntityError => {
-  if (error instanceof EntityError) {
-    return true;
-  }
-  return false;
+  return error.status === 422;
 };
 
 const isAuthError = (error: any): error is AuthError => {
-  if (error instanceof AuthError) {
-    return true;
-  }
-  return false;
+  return error.status === 401;
 };
 
 const isForbiddenError = (error: any): error is ForbiddenError => {
-  if (error instanceof ForbiddenError) {
-    return true;
-  }
-  return false;
+  return error.status === 403;
 };
 
 const isStatusError = (error: any): error is StatusError => {
@@ -46,6 +37,7 @@ export default function errorMiddleware(
   response: Response,
   next: NextFunction,
 ) {
+  console.log(error);
   if (isEntityError(error)) {
     return response.status(error.status).send({
       message: "Lỗi xảy ra khi xác thực dữ liệu...",
