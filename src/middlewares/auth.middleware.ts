@@ -16,7 +16,7 @@ export default async function checkLoggedInMiddleware(
         token: sessionToken as string,
       },
       include: {
-        account: true,
+        user: true,
       },
     });
     if (!session_row) throw new AuthError("Session Token không tồn tại");

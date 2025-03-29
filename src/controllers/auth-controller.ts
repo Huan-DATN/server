@@ -35,27 +35,29 @@ export default class AuthController extends BaseController {
   //#region Login
   validateLogin = async (body: LoginBodyType) => {
     // Bạn có thể thêm xác thực ở đây
-    const account = await this.prisma.account.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         email: body.email,
       },
     });
-    if (!account) {
+    if (!user) {
       throw new EntityError([
         { field: "email", message: "Not found any Account with this email" },
       ]);
     }
-    const isPasswordMatch = await comparePassword(
-      body.password,
-      account.password,
-    );
+    if (!user.isActive) {
+      throw new EntityError([
+        { field: "email", message: "Your account was banned" },
+      ]);
+    }
+    const isPasswordMatch = await comparePassword(body.password, user.password);
     if (!isPasswordMatch) {
       throw new EntityError([
         { field: "password", message: "Email or Password Not Match" },
       ]);
     }
     const sessionToken = signSessionToken({
-      userId: account.id,
+      userId: user.id,
     });
     const expiresAt = addMilliseconds(
       new Date(),
@@ -64,13 +66,13 @@ export default class AuthController extends BaseController {
 
     const session = await this.prisma.session.create({
       data: {
-        accountId: account.id,
+        userId: user.id,
         token: sessionToken,
         expiresAt,
       },
     });
     return {
-      account,
+      user,
       session,
     };
   };
@@ -83,15 +85,15 @@ export default class AuthController extends BaseController {
     // Bạn có thể thêm xác thực ở đây
     try {
       const body = request.body as LoginBodyType;
-      const { account, session } = await this.validateLogin(body);
+      const { user, session } = await this.validateLogin(body);
       return response.json({
         data: {
           token: session.token,
           expiresAt: session.expiresAt,
-          account: {
-            id: account.id,
-            name: account.name,
-            email: account.email,
+          user: {
+            id: user.id,
+            name: user.firstName,
+            email: user.email,
           },
         },
         message: "Login successfully",
@@ -107,16 +109,17 @@ export default class AuthController extends BaseController {
   registerService = async (body: RegisterBodyType) => {
     try {
       const hashedPassword = await hashPassword(body.password);
-      const account = await this.prisma.account.create({
+      const user = await this.prisma.user.create({
         data: {
-          name: body.name,
+          lastName: body.lastName,
+          firstName: body.firstName,
           email: body.email,
           password: hashedPassword,
         },
       });
 
       const sessionToken = signSessionToken({
-        userId: account.id,
+        userId: user.id,
       });
       const expiresAt = addMilliseconds(
         new Date(),
@@ -124,13 +127,13 @@ export default class AuthController extends BaseController {
       );
       const session = await this.prisma.session.create({
         data: {
-          accountId: account.id,
+          userId: user.id,
           token: sessionToken,
           expiresAt,
         },
       });
       return {
-        account,
+        user,
         session,
       };
     } catch (error: any) {
@@ -153,13 +156,13 @@ export default class AuthController extends BaseController {
     // Bạn có thể thêm xác thực ở đây
     try {
       const body = request.body as RegisterBodyType;
-      const { session, account } = await this.registerService(body);
+      const { session, user } = await this.registerService(body);
       return response.send({
         message: "Đăng ký thành công",
         data: {
           token: session.token,
           expiresAt: session.expiresAt.toISOString(),
-          account,
+          user,
         },
       });
     } catch (error) {
@@ -196,7 +199,7 @@ export default class AuthController extends BaseController {
   ) => {
     try {
       const sessionToken = request.headers.authorization?.split(" ")[1];
-      const session = await this.slideSessionService(sessionToken as string);
+      const session = await this.slideSessionService(sessionToken!);
 
       return response.json({
         data: {
