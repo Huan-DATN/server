@@ -5,6 +5,7 @@ dotenv.config();
 
 const configSchema = z.object({
   PORT: z.coerce.number().default(3000),
+  NODE_ENV: z.enum(["dev", "production"]).default("dev"),
   DB_HOST: z.string().default("localhost"),
   DB_PORT: z.coerce.number().default(5432),
   DB_USER: z.string().default("postgres"),

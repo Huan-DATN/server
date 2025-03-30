@@ -1,8 +1,10 @@
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import express from "express";
+import { corsOptions } from "./config/cors";
 import { BaseController } from "./controllers/abstractions/base-controller";
 import errorMiddleware from "./middlewares/error.middleware";
-
 class App {
   public app: express.Application;
   public port: number | string;
@@ -12,25 +14,28 @@ class App {
     this.port = port;
 
     this.initializeMiddlewares();
+    this.initializeCORS();
     this.initializeControllers(controllers);
     this.initializeErrorHandling();
-    this.initializeMore();
   }
 
   private initializeMiddlewares() {
+    this.app.use((req, res, next) => {
+      res.set("Cache-Control", "no-store");
+      next();
+    });
     this.app.use(express.json());
+    this.app.use(bodyParser.json());
+    this.app.use(cookieParser());
   }
 
   private initializeErrorHandling() {
     this.app.use(errorMiddleware);
   }
 
-  private initializeMore() {
-    this.app.use(bodyParser.json());
-    // this.app.use(cors());
+  private initializeCORS() {
     this.app.use((req, res, next) => {
-      res.set("Cache-Control", "no-store");
-      next();
+      cors(corsOptions)(req, res, next);
     });
   }
 

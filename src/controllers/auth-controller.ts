@@ -30,6 +30,11 @@ export default class AuthController extends BaseController {
       checkLoggedInMiddleware,
       this.slideSession,
     );
+    this.router.post(
+      `${this.path}/logout`,
+      checkLoggedInMiddleware,
+      this.logout,
+    );
   }
 
   //#region Login
@@ -42,18 +47,18 @@ export default class AuthController extends BaseController {
     });
     if (!user) {
       throw new EntityError([
-        { field: "email", message: "Not found any Account with this email" },
+        { field: "email", message: "Email chưa được đăng kí" },
       ]);
     }
     if (!user.isActive) {
       throw new EntityError([
-        { field: "email", message: "Your account was banned" },
+        { field: "email", message: "Tài khoản đã bị khoá" },
       ]);
     }
     const isPasswordMatch = await comparePassword(body.password, user.password);
     if (!isPasswordMatch) {
       throw new EntityError([
-        { field: "password", message: "Email or Password Not Match" },
+        { field: "password", message: "Email hoặc Mật khầu không khớp" },
       ]);
     }
     const sessionToken = signSessionToken({
@@ -96,7 +101,7 @@ export default class AuthController extends BaseController {
             email: user.email,
           },
         },
-        message: "Login successfully",
+        message: "Đăng nhập thành công",
       });
     } catch (error) {
       next(error);
@@ -207,6 +212,31 @@ export default class AuthController extends BaseController {
           expiresAt: session.expiresAt,
         },
         message: "Refresh session thành công",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  //#endregion
+
+  //#region Logout
+  logoutService = async (sessionToken: string) => {
+    await this.prisma.session.delete({
+      where: {
+        token: sessionToken,
+      },
+    });
+  };
+  logout = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const sessionToken = request.headers.authorization?.split(" ")[1];
+      await this.logoutService(sessionToken!);
+      return response.json({
+        message: "Đăng xuất thành công",
       });
     } catch (error) {
       next(error);
