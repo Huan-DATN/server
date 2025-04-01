@@ -25,7 +25,8 @@ model ProductCategory {
   description String
   createdAt   DateTime  @default(now())
   modifiedAt  DateTime  @default(now())
-  isDeleted     Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
+  isActive    Boolean   @default(true)
   products    Product[]
 }
 
@@ -34,7 +35,7 @@ model ProductInventory {
   quantity   Int
   createdAt  DateTime  @default(now())
   modifiedAt DateTime  @default(now())
-  isDeleted    Boolean   @default(false)
+  isDeleted  Boolean   @default(false)
   products   Product[]
 }
 
@@ -43,10 +44,10 @@ model Discount {
   name            String
   description     String
   discountPercent Decimal
-  isActive          Boolean
+  isActive        Boolean
   createdAt       DateTime  @default(now())
   modifiedAt      DateTime  @default(now())
-  isDeleted         Boolean   @default(false)
+  isDeleted       Boolean   @default(false)
   products        Product[]
 }
 
@@ -62,7 +63,7 @@ model Product {
   price       Decimal
   createdAt   DateTime @default(now())
   modifiedAt  DateTime @default(now())
-  isDeleted     Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
 
   seller      User             @relation("SellerProducts", fields: [sellerId], references: [id])
   category    ProductCategory  @relation(fields: [categoryId], references: [id])
@@ -83,7 +84,7 @@ model User {
   role       Role     @default(BUYER)
   createdAt  DateTime @default(now())
   modifiedAt DateTime @default(now())
-  isActive     Boolean  @default(true)
+  isActive   Boolean  @default(true)
 
   addresses        UserAddress[]
   shoppingSessions ShoppingSession[]
