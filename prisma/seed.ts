@@ -16,9 +16,9 @@ async function main() {
   // Delete all existing data
   await prisma.user.deleteMany();
   await prisma.session.deleteMany();
-  await prisma.userAddress.deleteMany();
   await prisma.product.deleteMany();
-  await prisma.productCategory.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.categoryProduct.deleteMany();
 
   await prisma.orderItem.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -60,10 +60,9 @@ async function main() {
 
   // Create categories
   for (const name of categories) {
-    await prisma.productCategory.create({
+    await prisma.category.create({
       data: {
         name,
-        description: `Description for ${name}`,
       },
     });
   }

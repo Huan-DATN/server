@@ -16,12 +16,12 @@ export default class ProductCategoryController extends BaseController {
 
   //#region FetchAll
   getAll = async (
-    req: express.Request,
-    res: express.Response,
+    request: express.Request,
+    response: express.Response,
     next: express.NextFunction,
   ) => {
     try {
-      const categories = await this.prisma.productCategory.findMany({
+      const categories = await this.prisma.category.findMany({
         where: {
           isActive: true,
         },
@@ -29,7 +29,10 @@ export default class ProductCategoryController extends BaseController {
           name: "asc",
         },
       });
-      return res.status(200).json(categories);
+      return response.send({
+        message: "Đăng ký thành công",
+        data: categories,
+      });
     } catch (error) {
       next(error);
     }

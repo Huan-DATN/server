@@ -1,16 +1,10 @@
-import { addMilliseconds } from "date-fns";
 import express from "express";
-import ms from "ms";
-import envConfig from "../config";
-import { PrismaErrorCode } from "../constants/error-reference";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import {
   LoginBodyType,
   RegisterBodyType,
 } from "../schemaValidations/auth.schema";
-import { comparePassword, hashPassword } from "../utils/crypto";
-import { EntityError, isPrismaClientKnownRequestError } from "../utils/errors";
-import { signSessionToken } from "../utils/jwt";
+import * as AuthService from "../services/auth-service";
 import { BaseController } from "./abstractions/base-controller";
 
 export default class AuthController extends BaseController {
@@ -38,49 +32,6 @@ export default class AuthController extends BaseController {
   }
 
   //#region Login
-  validateLogin = async (body: LoginBodyType) => {
-    // Bạn có thể thêm xác thực ở đây
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: body.email,
-      },
-    });
-    if (!user) {
-      throw new EntityError([
-        { field: "email", message: "Email chưa được đăng kí" },
-      ]);
-    }
-    if (!user.isActive) {
-      throw new EntityError([
-        { field: "email", message: "Tài khoản đã bị khoá" },
-      ]);
-    }
-    const isPasswordMatch = await comparePassword(body.password, user.password);
-    if (!isPasswordMatch) {
-      throw new EntityError([
-        { field: "password", message: "Email hoặc Mật khầu không khớp" },
-      ]);
-    }
-    const sessionToken = signSessionToken({
-      userId: user.id,
-    });
-    const expiresAt = addMilliseconds(
-      new Date(),
-      ms(envConfig.SESSION_TOKEN_EXPIRES_IN as any) as any,
-    );
-
-    const session = await this.prisma.session.create({
-      data: {
-        userId: user.id,
-        token: sessionToken,
-        expiresAt,
-      },
-    });
-    return {
-      user,
-      session,
-    };
-  };
 
   login = async (
     request: express.Request,
@@ -90,16 +41,12 @@ export default class AuthController extends BaseController {
     // Bạn có thể thêm xác thực ở đây
     try {
       const body = request.body as LoginBodyType;
-      const { user, session } = await this.validateLogin(body);
+      const { user, session } = await AuthService.validateLogin(body);
       return response.json({
         data: {
           token: session.token,
           expiresAt: session.expiresAt,
-          user: {
-            id: user.id,
-            name: user.firstName,
-            email: user.email,
-          },
+          user,
         },
         message: "Đăng nhập thành công",
       });
@@ -110,49 +57,6 @@ export default class AuthController extends BaseController {
   //#endregion
 
   //#region Register
-
-  registerService = async (body: RegisterBodyType) => {
-    try {
-      const hashedPassword = await hashPassword(body.password);
-      const user = await this.prisma.user.create({
-        data: {
-          lastName: body.lastName,
-          firstName: body.firstName,
-          email: body.email,
-          password: hashedPassword,
-        },
-      });
-
-      const sessionToken = signSessionToken({
-        userId: user.id,
-      });
-      const expiresAt = addMilliseconds(
-        new Date(),
-        ms(envConfig.SESSION_TOKEN_EXPIRES_IN as any) as any,
-      );
-      const session = await this.prisma.session.create({
-        data: {
-          userId: user.id,
-          token: sessionToken,
-          expiresAt,
-        },
-      });
-      return {
-        user,
-        session,
-      };
-    } catch (error: any) {
-      if (isPrismaClientKnownRequestError(error)) {
-        if (error.code === PrismaErrorCode.UniqueConstraintViolation) {
-          throw new EntityError([
-            { field: "email", message: "Email đã tồn tại" },
-          ]);
-        }
-      }
-      throw error;
-    }
-  };
-
   register = async (
     request: express.Request,
     response: express.Response,
@@ -161,7 +65,7 @@ export default class AuthController extends BaseController {
     // Bạn có thể thêm xác thực ở đây
     try {
       const body = request.body as RegisterBodyType;
-      const { session, user } = await this.registerService(body);
+      const { session, user } = await AuthService.registerService(body);
       return response.send({
         message: "Đăng ký thành công",
         data: {
@@ -181,21 +85,6 @@ export default class AuthController extends BaseController {
    * Tăng thời gian hết hạn của session token lên
    * @param sessionToken
    */
-  slideSessionService = async (sessionToken: string) => {
-    const expiresAt = addMilliseconds(
-      new Date(),
-      ms(envConfig.SESSION_TOKEN_EXPIRES_IN as any) as any,
-    );
-    const session = await this.prisma.session.update({
-      where: {
-        token: sessionToken,
-      },
-      data: {
-        expiresAt,
-      },
-    });
-    return session;
-  };
 
   slideSession = async (
     request: express.Request,
@@ -204,7 +93,7 @@ export default class AuthController extends BaseController {
   ) => {
     try {
       const sessionToken = request.headers.authorization?.split(" ")[1];
-      const session = await this.slideSessionService(sessionToken!);
+      const session = await AuthService.slideSession(sessionToken!);
 
       return response.json({
         data: {
@@ -220,13 +109,7 @@ export default class AuthController extends BaseController {
   //#endregion
 
   //#region Logout
-  logoutService = async (sessionToken: string) => {
-    await this.prisma.session.delete({
-      where: {
-        token: sessionToken,
-      },
-    });
-  };
+
   logout = async (
     request: express.Request,
     response: express.Response,
@@ -234,7 +117,7 @@ export default class AuthController extends BaseController {
   ) => {
     try {
       const sessionToken = request.headers.authorization?.split(" ")[1];
-      await this.logoutService(sessionToken!);
+      await AuthService.logOut(sessionToken!);
       return response.json({
         message: "Đăng xuất thành công",
       });

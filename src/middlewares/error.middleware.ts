@@ -27,6 +27,13 @@ const isStatusError = (error: any): error is StatusError => {
   return false;
 };
 
+const isNotFoundError = (error: any): error is StatusError => {
+  if (error instanceof StatusError) {
+    return error.status === 404;
+  }
+  return false;
+};
+
 export default function errorMiddleware(
   error:
     | EntityError
@@ -62,6 +69,11 @@ export default function errorMiddleware(
         message: error.message,
         statusCode: error.status,
       });
+  } else if (isNotFoundError(error)) {
+    return response.status(error.status).send({
+      message: error.message,
+      statusCode: error.status,
+    });
   } else if (isStatusError(error)) {
     return response.status(error.status).send({
       message: error.message,
