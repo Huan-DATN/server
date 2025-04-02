@@ -22,6 +22,13 @@ export class ForbiddenError extends Error {
   }
 }
 
+export class NotFoundError extends Error {
+  status: number = 404;
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class StatusError extends Error {
   status: number;
   constructor({ message, status }: { message: string; status: number }) {

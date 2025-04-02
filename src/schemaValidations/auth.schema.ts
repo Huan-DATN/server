@@ -1,4 +1,5 @@
 import z from "zod";
+import { UserSchema } from "./user.schema";
 
 export const RegisterBody = z
   .object({
@@ -25,11 +26,7 @@ export const RegisterRes = z.object({
   data: z.object({
     token: z.string(),
     expiresAt: z.string(),
-    account: z.object({
-      id: z.number(),
-      name: z.string(),
-      email: z.string(),
-    }),
+    user: UserSchema,
   }),
   message: z.string(),
 });
