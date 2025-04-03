@@ -14,11 +14,11 @@ const categories = [
 
 async function main() {
   // Delete all existing data
+  await prisma.categoryProduct.deleteMany();
   await prisma.user.deleteMany();
   await prisma.session.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
-  await prisma.categoryProduct.deleteMany();
 
   await prisma.orderItem.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -64,6 +64,57 @@ async function main() {
       data: {
         name,
       },
+    });
+  }
+
+  // Create 200 products
+  const numberProduct = 200;
+  const products: any[] = [];
+
+  for (let i = 0; i < numberProduct; i++) {
+    products.push({
+      name: `Product ${i + 1}`,
+      description: `Description for product ${i + 1}`,
+      quantity: Math.floor(Math.random() * 100) + 1,
+      price: Math.floor(Math.random() * 10000) + 1,
+      image: `https://placehold.co/600x400/png`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  // Assign random users to products
+  const usersInDb = await prisma.user.findMany({
+    where: {
+      role: "SELLER",
+    },
+  });
+  for (const product of products) {
+    const randomUser = usersInDb[Math.floor(Math.random() * usersInDb.length)];
+    product.userId = randomUser.id;
+  }
+
+  for (const product of products) {
+    await prisma.product.create({
+      data: product,
+    });
+  }
+
+  // Create category-product relationships
+  const productsInDb = await prisma.product.findMany();
+  const categoriesInDb = await prisma.category.findMany();
+  const categoryProductData: any[] = [];
+  for (const product of productsInDb) {
+    const randomCategory =
+      categoriesInDb[Math.floor(Math.random() * categoriesInDb.length)];
+    categoryProductData.push({
+      productId: product.id,
+      categoryId: randomCategory.id,
+    });
+  }
+  for (const data of categoryProductData) {
+    await prisma.categoryProduct.create({
+      data,
     });
   }
 }
