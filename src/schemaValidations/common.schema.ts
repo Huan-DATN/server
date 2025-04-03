@@ -13,4 +13,6 @@ export const PaginationReq = z
   })
   .strict();
 
+export type PaginationReqType = z.TypeOf<typeof PaginationReq>;
+
 export type MessageResType = z.TypeOf<typeof MessageRes>;
