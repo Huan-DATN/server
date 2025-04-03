@@ -13,7 +13,7 @@ export default class ProductController extends BaseController {
 
   public initializeRoutes() {
     this.router.get(`${this.path}`, this.getAllProducts);
-    // this.router.get(`${this.path}/:id`, this.getProductById);
+    this.router.get(`${this.path}/:id`, this.getProductById);
     // this.router.post(`${this.path}`, this.createProduct);
     // this.router.put(`${this.path}/:id`, this.updateProductById);
     // this.router.delete(`${this.path}/:id`, this.deleteProductById);
@@ -55,6 +55,23 @@ export default class ProductController extends BaseController {
       return response.status(200).json({
         data,
         message: "Products fetched successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getProductById = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { id } = request.params;
+      const data = await ProductService.getProductById(Number(id));
+      return response.status(200).json({
+        data,
+        message: "Product fetched successfully",
       });
     } catch (error) {
       next(error);

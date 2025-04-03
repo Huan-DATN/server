@@ -1,6 +1,7 @@
 import prismaClient from "../database";
 import { PaginationReqType } from "../schemaValidations/common.schema";
 import { SearchProductQueryType } from "../schemaValidations/product.schema";
+import { NotFoundError } from "../utils/errors";
 
 const getAllProducts = async (
   { page, limit }: PaginationReqType,
@@ -54,6 +55,22 @@ const getAllProducts = async (
   };
 };
 
-const ProductService = { getAllProducts };
+const getProductById = async (id: number) => {
+  const product = await prismaClient.product.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      user: true,
+      categories: true,
+    },
+  });
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+  return product;
+};
+
+const ProductService = { getAllProducts, getProductById };
 
 export default ProductService;
