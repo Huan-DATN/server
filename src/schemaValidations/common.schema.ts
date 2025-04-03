@@ -1,9 +1,16 @@
-import z from 'zod'
+import z from "zod";
 
 export const MessageRes = z
   .object({
-    message: z.string()
+    message: z.string(),
   })
-  .strict()
+  .strict();
 
-export type MessageResType = z.TypeOf<typeof MessageRes>
+export const PaginationReq = z
+  .object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().default(10),
+  })
+  .strict();
+
+export type MessageResType = z.TypeOf<typeof MessageRes>;
