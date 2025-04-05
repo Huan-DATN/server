@@ -40,6 +40,7 @@ export type ProductListResType = z.TypeOf<typeof ProductListRes>;
 export const SearchProductQuery = z.object({
   name: z.string().optional(),
   categoryIds: z.array(z.number()).optional(),
+  priceIds: z.array(z.number()).optional(),
 });
 export type SearchProductQueryType = z.infer<typeof SearchProductQuery>;
 

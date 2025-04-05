@@ -27,9 +27,10 @@ export default class ProductController extends BaseController {
   ) => {
     try {
       const { page, limit } = request.query;
-      const { name, categoryIds } = request.query;
+      const { name, categoryIds, priceIds } = request.query;
 
       let categoryIdsArray: number[] | undefined = undefined;
+      let priceIdsArray: number[] | undefined = undefined;
 
       if (!categoryIds || categoryIds.length === 0) {
         categoryIdsArray = undefined;
@@ -41,6 +42,14 @@ export default class ProductController extends BaseController {
               .map((id) => Number(id) as number);
       }
 
+      if (!priceIds || priceIds.length === 0) {
+        priceIdsArray = undefined;
+      } else {
+        priceIdsArray = Array.isArray(priceIds)
+          ? priceIds.map((id) => Number(id))
+          : (priceIds as string).split(",").map((id) => Number(id) as number);
+      }
+
       const data = await ProductService.getAllProducts(
         PaginationReq.parse({
           page,
@@ -49,6 +58,7 @@ export default class ProductController extends BaseController {
         SearchProductQuery.parse({
           ...request.query,
           categoryIds: categoryIdsArray,
+          priceIds: priceIdsArray,
         }),
       );
 
