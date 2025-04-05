@@ -1,4 +1,5 @@
 import express from "express";
+import pricesFilter from "../constants/prices-filter";
 import { BaseController } from "./abstractions/base-controller";
 
 export default class ProductCategoryController extends BaseController {
@@ -29,9 +30,14 @@ export default class ProductCategoryController extends BaseController {
           name: "asc",
         },
       });
+
+      const prices = pricesFilter;
       return response.send({
         message: "Đăng ký thành công",
-        data: categories,
+        data: {
+          categories,
+          prices,
+        },
       });
     } catch (error) {
       next(error);
