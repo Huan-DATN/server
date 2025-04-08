@@ -20,6 +20,9 @@ export default async function checkLoggedInMiddleware(
       },
     });
     if (!session_row) throw new AuthError("Session Token không tồn tại");
+
+    const user = session_row.user;
+    request.headers.userId = user.id.toString();
     next();
   } catch (error) {
     next(error);

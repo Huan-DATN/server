@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import App from "./app";
 import AuthController from "./controllers/auth-controller";
+import CartController from "./controllers/cart-controller";
 import ProductCategoryController from "./controllers/category-controller";
 import MediaController from "./controllers/media-controller";
 import ProductController from "./controllers/product-controller";
@@ -16,6 +17,7 @@ const app = new App(
     new ProductCategoryController(),
     new UserController(),
     new ProductController(),
+    new CartController(),
   ],
   port,
 );
