@@ -4,6 +4,7 @@ import AuthController from "./controllers/auth-controller";
 import CartController from "./controllers/cart-controller";
 import ProductCategoryController from "./controllers/category-controller";
 import MediaController from "./controllers/media-controller";
+import OrderController from "./controllers/order-controller";
 import ProductController from "./controllers/product-controller";
 import UserController from "./controllers/user-controller";
 
@@ -18,6 +19,7 @@ const app = new App(
     new UserController(),
     new ProductController(),
     new CartController(),
+    new OrderController(),
   ],
   port,
 );

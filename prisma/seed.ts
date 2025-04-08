@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { OrderStatusType, PrismaClient } from "@prisma/client";
 import { hashPassword } from "./../src/utils/crypto";
 const prisma = new PrismaClient();
 
@@ -13,15 +13,7 @@ const categories = [
 ];
 
 async function main() {
-  // Delete all existing data
-  await prisma.categoryProduct.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.category.deleteMany();
-
-  await prisma.orderItem.deleteMany();
-  await prisma.cartItem.deleteMany();
+  // Delete all data to reset the database
 
   // Create 11 Users: Include 5 users with role "USER", 5 users with role "BUYER", and 1 "ADMIN"
   const hashedPasswordDefault = await hashPassword("123123");
@@ -115,6 +107,22 @@ async function main() {
   for (const data of categoryProductData) {
     await prisma.categoryProduct.create({
       data,
+    });
+  }
+
+  // Create Status
+  const orderStatus = [
+    { name: "PENDING" },
+    { name: "DELIVERED" },
+    { name: "SHIPPED" },
+    { name: "CANCELLED" },
+  ];
+  for (const status of orderStatus) {
+    await prisma.status.create({
+      data: {
+        type: status.name as OrderStatusType,
+        name: status.name,
+      },
     });
   }
 }
