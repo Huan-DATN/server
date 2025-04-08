@@ -21,17 +21,11 @@ const isForbiddenError = (error: any): error is ForbiddenError => {
 };
 
 const isStatusError = (error: any): error is StatusError => {
-  if (error instanceof StatusError) {
-    return true;
-  }
-  return false;
+  return error.status !== 400;
 };
 
 const isNotFoundError = (error: any): error is StatusError => {
-  if (error instanceof StatusError) {
-    return error.status === 404;
-  }
-  return false;
+  return error.status === 404;
 };
 
 export default function errorMiddleware(
