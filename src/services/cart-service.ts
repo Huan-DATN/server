@@ -66,10 +66,6 @@ const getCart = async (userId: number) => {
     },
   });
 
-  if (!cartItems || cartItems.length === 0) {
-    throw new NotFoundError("Giỏ hàng trống");
-  }
-
   return cartItems;
 };
 
