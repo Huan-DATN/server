@@ -29,6 +29,7 @@ model User {
   firstName   String?
   lastName    String?
   email       String        @unique
+  shopName    String?
   password    String
   phone       String?
   address     String?
@@ -40,6 +41,9 @@ model User {
   orders      OrderDetail[]
   Product     Product[]
   CartItem    CartItem[]
+
+  OrderDetail OrderDetail[] @relation("UserOrders")
+  ShopOrderDetail OrderDetail[] @relation("ShopOrders")
 }
 
 model Session {
@@ -73,11 +77,16 @@ model Product {
   image       String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  groupProductId Int
+  cityId Int
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   cartItems     CartItem[]
   orderItems    OrderItem[]
-  categories    CategoryProduct[]
+  categories    Category[]
+  groupProduct GroupProduct @relation(fields: [groupProductId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  City City @relation(fields: [cityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model OrderDetail {
@@ -88,11 +97,14 @@ model OrderDetail {
   total       Float
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  shopId   Int
 
-  user        User        @relation(fields: [userId], references: [id])
+  user        User        @relation("UserOrders", fields: [userId], references: [id])
   items       OrderItem[]
-
+  shop        User        @relation("ShopOrders", fields: [shopId], references: [id])
   OrderStatus OrderStatus[]
+
+  User User[]
 }
 
 model OrderItem {
@@ -115,18 +127,28 @@ model Category {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  products CategoryProduct[]
+  products Product[]
 }
 
-model CategoryProduct {
-  id         Int      @id @default(autoincrement())
-  productId  Int
-  categoryId Int
+model GroupProduct {
+  id        Int                @id @default(autoincrement())
+  name      String
+  image     String?
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
-  product  Product  @relation(fields: [productId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  products Product[]
+}
 
-  @@unique([productId, categoryId])
+model City {
+  id        Int                @id @default(autoincrement())
+  name      String
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  Products Product[]
 }
 
 model OrderStatus {

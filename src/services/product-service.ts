@@ -8,7 +8,6 @@ const getAllProducts = async (
   { page, limit }: PaginationReqType,
   { name, categoryIds, priceIds }: SearchProductQueryType,
 ) => {
-  console.log(name, categoryIds, priceIds);
   const validateCategoryIds = categoryIds
     ? {
         categories: {
@@ -25,7 +24,6 @@ const getAllProducts = async (
   const priceRanges = priceIds
     ? priceIds.map((id) => {
         const priceRange = pricesFilter.find((item) => item.key === id);
-        console.log("priceRange", priceRange);
         return priceRange
           ? {
               gte: priceRange.min,
@@ -39,7 +37,6 @@ const getAllProducts = async (
   const filteredPriceRanges = priceRanges.filter(
     (range) => range !== undefined,
   );
-  console.log("filteredPriceRanges", filteredPriceRanges);
 
   const validatePriceIds = filteredPriceRanges.length
     ? {
@@ -59,13 +56,23 @@ const getAllProducts = async (
       },
       where: {
         AND: [
-          ...(name ? [{ name: { contains: name } }] : []),
           ...(validateCategoryIds ? [validateCategoryIds] : []),
           ...(validatePriceIds ? [validatePriceIds] : []),
+          {
+            name: {
+              contains: name,
+              mode: "insensitive",
+            },
+          },
         ],
       },
       include: {
         user: true,
+        categories: {
+          include: {
+            category: true,
+          },
+        },
       },
     }),
     prismaClient.product.count({

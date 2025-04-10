@@ -17,6 +17,11 @@ export default class MediaController extends BaseController {
       multerUploadMiddleware.upload.single("image") as any,
       this.uploadMedia,
     );
+    this.router.delete(
+      `${this.path}/delete`,
+      multerUploadMiddleware.upload.single("image") as any,
+      this.deleteMedia,
+    );
   }
 
   uploadMedia = async (
@@ -38,5 +43,27 @@ export default class MediaController extends BaseController {
       message: "Upload successfully",
       data: uploadResult,
     });
+  };
+
+  deleteMedia = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { publicUrl } = request.body;
+
+      if (!publicUrl) {
+        throw new Error("publicUrl is not found");
+      }
+
+      const deleteResult = await CloudinaryProvider.deleteMedia(publicUrl);
+      return response.json({
+        message: "Delete successfully",
+        data: deleteResult,
+      });
+    } catch (error) {
+      next(error);
+    }
   };
 }

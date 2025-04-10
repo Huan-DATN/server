@@ -28,12 +28,10 @@ export default class ProductController extends BaseController {
     try {
       const { page, limit } = request.query;
       const { name, categoryIds, priceIds } = request.query;
-
       let categoryIdsArray: number[] | undefined = undefined;
       let priceIdsArray: number[] | undefined = undefined;
 
       if (!categoryIds || categoryIds.length === 0) {
-        categoryIdsArray = undefined;
       } else {
         categoryIdsArray = Array.isArray(categoryIds)
           ? categoryIds.map((id) => Number(id))
@@ -43,7 +41,7 @@ export default class ProductController extends BaseController {
       }
 
       if (!priceIds || priceIds.length === 0) {
-        priceIdsArray = undefined;
+        priceIdsArray = [];
       } else {
         priceIdsArray = Array.isArray(priceIds)
           ? priceIds.map((id) => Number(id))

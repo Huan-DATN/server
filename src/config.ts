@@ -4,6 +4,9 @@ import { z } from "zod";
 dotenv.config();
 
 const configSchema = z.object({
+  DOMAIN: z.string().default("localhost"),
+  PROTOCOL: z.string().default("http"),
+  UPLOAD_FOLDER: z.string().default("uploads"),
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(["dev", "production"]).default("dev"),
   DB_HOST: z.string().default("localhost"),
@@ -18,6 +21,8 @@ const configSchema = z.object({
   CLOUDINARY_API_KEY: z.string().default(""),
   CLOUDINARY_API_SECRET: z.string().default(""),
   CLOUDINARY_BASE_URL: z.string().default(""),
+  IS_PRODUCTION: z.coerce.boolean().default(false),
+  PRODUCTION_URL: z.string().default(""),
 });
 
 const configServer = configSchema.safeParse(process.env);
@@ -27,5 +32,7 @@ if (!configServer.success) {
   throw new Error("Các giá trị khai báo trong file .env không hợp lệ");
 }
 const envConfig = configServer.data;
-
+export const API_URL = envConfig.IS_PRODUCTION
+  ? envConfig.PRODUCTION_URL
+  : `${envConfig.PROTOCOL}://${envConfig.DOMAIN}:${envConfig.PORT}`;
 export default envConfig;

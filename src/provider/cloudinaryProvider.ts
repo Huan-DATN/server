@@ -1,6 +1,7 @@
 import cloudinary from "cloudinary";
 import streamifier from "streamifier";
 import envConfig from "../config";
+import { extractPublicId } from "../utils/helpers";
 
 /**
  * Tài liệu tham khảo
@@ -26,7 +27,11 @@ const streamUpload = (
       { folder: folderName },
       (err, result) => {
         if (err) reject(err);
-        else resolve(result);
+        else
+          resolve({
+            publicId: result?.public_id,
+            url: result?.secure_url,
+          });
       },
     );
     // Thực hiện upload cái luồng trên bằng lib streamifier
@@ -34,4 +39,16 @@ const streamUpload = (
   });
 };
 
-export const CloudinaryProvider = { streamUpload };
+const deleteMedia = (publicUrl: string) => {
+  // Lấy publicId từ url
+  const publicId = extractPublicId(publicUrl);
+
+  return new Promise((resolve, reject) => {
+    cloudinaryV2.uploader.destroy(publicId, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+};
+
+export const CloudinaryProvider = { streamUpload, deleteMedia };
