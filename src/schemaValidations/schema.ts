@@ -64,7 +64,6 @@ export const ProductSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   groupProductId: z.number().int(),
-  categoryId: z.number().int(),
   isActive: z.boolean().default(true),
   groupProduct: z
     .object({
@@ -74,11 +73,21 @@ export const ProductSchema = z.object({
       isActive: z.boolean().default(true),
     })
     .optional(),
-  category: z.object({
-    id: z.number().int(),
-    name: z.string(),
-    isActive: z.boolean().default(true),
-  }),
+  categories: z
+    .array(
+      z.object({
+        id: z.number().int(),
+        name: z.string(),
+        isActive: z.boolean().default(true),
+      }),
+    )
+    .optional(),
+  user: z
+    .object({
+      id: z.number().int(),
+      shopName: z.string().nullable().optional(),
+    })
+    .optional(),
 });
 
 // OrderDetail

@@ -1,4 +1,3 @@
-import pricesFilter from "../constants/prices-filter";
 import prismaClient from "../database";
 import { PaginationReqType } from "../schemaValidations/common.schema";
 import { SearchProductQueryType } from "../schemaValidations/product.schema";
@@ -6,44 +5,33 @@ import { NotFoundError } from "../utils/errors";
 
 const getAllProducts = async (
   { page, limit }: PaginationReqType,
-  { name, categoryIds, priceIds }: SearchProductQueryType,
+  { name, categoryId, groupProductId, cityId }: SearchProductQueryType,
 ) => {
-  const validateCategoryIds = categoryIds
+  const validateCategoryId = categoryId
     ? {
         categories: {
           some: {
             categoryId: {
-              in: categoryIds,
+              in: categoryId,
             },
           },
         },
       }
     : undefined;
 
-  // Validate priceIds if needed
-  const priceRanges = priceIds
-    ? priceIds.map((id) => {
-        const priceRange = pricesFilter.find((item) => item.key === id);
-        return priceRange
-          ? {
-              gte: priceRange.min,
-              lte: priceRange.max,
-            }
-          : undefined;
-      })
-    : [];
-
-  // Filter out undefined values
-  const filteredPriceRanges = priceRanges.filter(
-    (range) => range !== undefined,
-  );
-
-  const validatePriceIds = filteredPriceRanges.length
+  const validateGroupProductId = groupProductId
     ? {
-        price: {
-          gte: Math.min(...filteredPriceRanges.map((range) => range!.gte)),
-          lte: Math.max(...filteredPriceRanges.map((range) => range!.lte)),
+        groupProduct: {
+          id: {
+            in: groupProductId,
+          },
         },
+      }
+    : undefined;
+
+  const validateCityId = cityId
+    ? {
+        cityId: cityId,
       }
     : undefined;
 
@@ -56,8 +44,8 @@ const getAllProducts = async (
       },
       where: {
         AND: [
-          ...(validateCategoryIds ? [validateCategoryIds] : []),
-          ...(validatePriceIds ? [validatePriceIds] : []),
+          ...(validateGroupProductId ? [validateGroupProductId] : []),
+          ...(validateCityId ? [validateCityId] : []),
           {
             name: {
               contains: name,
@@ -68,19 +56,21 @@ const getAllProducts = async (
       },
       include: {
         user: true,
-        categories: {
-          include: {
-            category: true,
-          },
-        },
+        categories: true,
+        groupProduct: true,
       },
     }),
     prismaClient.product.count({
       where: {
         AND: [
-          ...(name ? [{ name: { contains: name } }] : []),
-          ...(validateCategoryIds ? [validateCategoryIds] : []),
-          ...(validatePriceIds ? [validatePriceIds] : []),
+          ...(validateGroupProductId ? [validateGroupProductId] : []),
+          ...(validateCityId ? [validateCityId] : []),
+          {
+            name: {
+              contains: name,
+              mode: "insensitive",
+            },
+          },
         ],
       },
     }),

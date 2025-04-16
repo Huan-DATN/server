@@ -134,6 +134,7 @@ const createOrder = async (userId: number) => {
       total: totalAmount,
       addressLine: user.address,
       phone: user.phone,
+      shopId: 1, // Replace '1' with the appropriate shopId value
       items: {
         create: items.map((item) => ({
           productId: item.productId,

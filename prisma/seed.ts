@@ -1,16 +1,56 @@
 import { OrderStatusType, PrismaClient } from "@prisma/client";
+import * as fs from "fs";
 import { hashPassword } from "./../src/utils/crypto";
+
 const prisma = new PrismaClient();
 
-const categories = [
-  "Mắm tôm",
-  "Gốm sứ",
-  "Gạo",
-  "Trà thảo dược",
-  "Thực phẩm chức năng",
-  "Hạt sen sấy",
-  "Kẹo dừa",
-];
+async function importGroupProductFromFile(filePath: string) {
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const lines = fileContent.split("\n");
+
+  for (const line of lines) {
+    const name = line;
+    if (name) {
+      await prisma.groupProduct.create({
+        data: {
+          name: name.trim(),
+        },
+      });
+    }
+  }
+}
+
+async function importCategoriesFromFile(filePath: string) {
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const lines = fileContent.split("\n");
+
+  for (const line of lines) {
+    const name = line;
+    if (name) {
+      await prisma.category.create({
+        data: {
+          name: name.trim(),
+        },
+      });
+    }
+  }
+}
+
+async function importCitiesFromFile(filePath: string) {
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const lines = fileContent.split("\n");
+
+  for (const line of lines) {
+    const name = line;
+    if (name) {
+      await prisma.city.create({
+        data: {
+          name: name.trim(),
+        },
+      });
+    }
+  }
+}
 
 async function main() {
   // Delete all data to reset the database
@@ -51,62 +91,41 @@ async function main() {
   }
 
   // Create categories
-  for (const name of categories) {
-    await prisma.category.create({
-      data: {
-        name,
-      },
-    });
-  }
+  await importGroupProductFromFile("./prisma/data/groupsProduct.txt");
+  await importCategoriesFromFile("./prisma/data/categories.txt");
+  await importCitiesFromFile("./prisma/data/cities.txt");
 
-  // Create 200 products
-  const numberProduct = 200;
-  const products: any[] = [];
+  // Create Products
+  const groupProducts = await prisma.groupProduct.findMany();
+  const categories = await prisma.category.findMany();
+  const cities = await prisma.city.findMany();
+  const usersDB = await prisma.user.findMany();
 
-  for (let i = 0; i < numberProduct; i++) {
-    products.push({
-      name: `Product ${i + 1}`,
-      description: `Description for product ${i + 1}`,
-      quantity: Math.floor(Math.random() * 100) + 1,
-      price: Math.floor(Math.random() * 10000) + 1,
-      image: `https://placehold.co/600x400/png`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
-
-  // Assign random users to products
-  const usersInDb = await prisma.user.findMany({
-    where: {
-      role: "SELLER",
-    },
-  });
-  for (const product of products) {
-    const randomUser = usersInDb[Math.floor(Math.random() * usersInDb.length)];
-    product.userId = randomUser.id;
-  }
-
-  for (const product of products) {
-    await prisma.product.create({
-      data: product,
-    });
-  }
-
-  // Create category-product relationships
-  const productsInDb = await prisma.product.findMany();
-  const categoriesInDb = await prisma.category.findMany();
-  const categoryProductData: any[] = [];
-  for (const product of productsInDb) {
+  for (let i = 0; i < 900; i++) {
+    const randomGroupProduct =
+      groupProducts[Math.floor(Math.random() * groupProducts.length)];
     const randomCategory =
-      categoriesInDb[Math.floor(Math.random() * categoriesInDb.length)];
-    categoryProductData.push({
-      productId: product.id,
-      categoryId: randomCategory.id,
-    });
-  }
-  for (const data of categoryProductData) {
-    await prisma.categoryProduct.create({
-      data,
+      categories[Math.floor(Math.random() * categories.length)];
+    const randomCity = cities[Math.floor(Math.random() * cities.length)];
+    const randomUser = usersDB[Math.floor(Math.random() * usersDB.length)];
+    await prisma.product.create({
+      data: {
+        name: `Product ${i + 1}`,
+        description: `Description for Product ${i + 1}`,
+        price: Math.floor(Math.random() * 100) + 1,
+        quantity: Math.floor(Math.random() * 100) + 1,
+        groupProductId: randomGroupProduct.id,
+        cityId: randomCity.id,
+        userId: randomUser.id,
+        image: `https://picsum.photos/200/300?random=${i + 1}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        categories: {
+          connect: {
+            id: randomCategory.id,
+          },
+        },
+      },
     });
   }
 

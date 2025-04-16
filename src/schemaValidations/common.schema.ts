@@ -9,7 +9,7 @@ export const MessageRes = z
 export const PaginationReq = z
   .object({
     page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().default(10),
+    limit: z.coerce.number().int().positive().default(9),
   })
   .strict();
 

@@ -19,6 +19,15 @@ export const ProductSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   userId: z.number(),
+
+  groupProductId: z.number(),
+  groupProduct: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      image: z.string(),
+    })
+    .optional(),
 });
 
 export const ProductRes = z.object({
@@ -40,8 +49,8 @@ export type ProductListResType = z.TypeOf<typeof ProductListRes>;
 export const SearchProductQuery = z
   .object({
     name: z.string().optional(),
-    categoryIds: z.array(z.number()).optional(),
-    priceIds: z.array(z.number()).optional(),
+    groupProductId: z.coerce.number().optional(),
+    cityId: z.coerce.number().optional(),
   })
   .passthrough();
 export type SearchProductQueryType = z.infer<typeof SearchProductQuery>;

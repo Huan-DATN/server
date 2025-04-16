@@ -1,10 +1,11 @@
 import express from "express";
 import { PaginationReq } from "../schemaValidations/common.schema";
 import { SearchProductQuery } from "../schemaValidations/product.schema";
+import { ProductListRes } from "../schemaValidations/response/product";
 import ProductService from "../services/product-service";
 import { BaseController } from "./abstractions/base-controller";
 export default class ProductController extends BaseController {
-  public path = "/product";
+  public path = "/products";
 
   constructor() {
     super();
@@ -27,26 +28,7 @@ export default class ProductController extends BaseController {
   ) => {
     try {
       const { page, limit } = request.query;
-      const { name, categoryIds, priceIds } = request.query;
-      let categoryIdsArray: number[] | undefined = undefined;
-      let priceIdsArray: number[] | undefined = undefined;
-
-      if (!categoryIds || categoryIds.length === 0) {
-      } else {
-        categoryIdsArray = Array.isArray(categoryIds)
-          ? categoryIds.map((id) => Number(id))
-          : (categoryIds as string)
-              .split(",")
-              .map((id) => Number(id) as number);
-      }
-
-      if (!priceIds || priceIds.length === 0) {
-        priceIdsArray = [];
-      } else {
-        priceIdsArray = Array.isArray(priceIds)
-          ? priceIds.map((id) => Number(id))
-          : (priceIds as string).split(",").map((id) => Number(id) as number);
-      }
+      const { name, groupProductId, cityId } = request.query;
 
       const data = await ProductService.getAllProducts(
         PaginationReq.parse({
@@ -55,15 +37,21 @@ export default class ProductController extends BaseController {
         }),
         SearchProductQuery.parse({
           ...request.query,
-          categoryIds: categoryIdsArray,
-          priceIds: priceIdsArray,
+          groupProductId,
+          cityId,
         }),
       );
 
-      return response.status(200).json({
-        data,
-        message: "Products fetched successfully",
-      });
+      return response.status(200).json(
+        ProductListRes.parse({
+          data: data.products,
+          meta: {
+            total: data.totalPages,
+            totalPages: data.totalProducts,
+          },
+          message: "Products fetched successfully",
+        }),
+      );
     } catch (error) {
       next(error);
     }
