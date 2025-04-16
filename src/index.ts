@@ -3,6 +3,7 @@ import App from "./app";
 import AuthController from "./controllers/auth-controller";
 import CartController from "./controllers/cart-controller";
 import ProductCategoryController from "./controllers/category-controller";
+import CommonController from "./controllers/common-controller";
 import MediaController from "./controllers/media-controller";
 import OrderController from "./controllers/order-controller";
 import ProductController from "./controllers/product-controller";
@@ -20,6 +21,7 @@ const app = new App(
     new ProductController(),
     new CartController(),
     new OrderController(),
+    new CommonController(),
   ],
   port,
 );

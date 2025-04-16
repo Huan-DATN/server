@@ -1,7 +1,10 @@
 import express from "express";
 import { PaginationReq } from "../schemaValidations/common.schema";
 import { SearchProductQuery } from "../schemaValidations/product.schema";
-import { ProductListRes } from "../schemaValidations/response/product";
+import {
+  ProductListRes,
+  ProductRes,
+} from "../schemaValidations/response/product";
 import ProductService from "../services/product-service";
 import { BaseController } from "./abstractions/base-controller";
 export default class ProductController extends BaseController {
@@ -46,8 +49,8 @@ export default class ProductController extends BaseController {
         ProductListRes.parse({
           data: data.products,
           meta: {
-            total: data.totalPages,
-            totalPages: data.totalProducts,
+            total: data.totalProducts,
+            totalPages: data.totalPages,
           },
           message: "Products fetched successfully",
         }),
@@ -65,10 +68,12 @@ export default class ProductController extends BaseController {
     try {
       const { id } = request.params;
       const data = await ProductService.getProductById(Number(id));
-      return response.status(200).json({
-        data,
-        message: "Product fetched successfully",
-      });
+      return response.status(200).json(
+        ProductRes.parse({
+          data,
+          message: "Product fetched successfully",
+        }),
+      );
     } catch (error) {
       next(error);
     }

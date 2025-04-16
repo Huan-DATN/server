@@ -25,24 +25,24 @@ enum OrderStatusType {
 }
 
 model User {
-  id          Int           @id @default(autoincrement())
-  firstName   String?
-  lastName    String?
-  email       String        @unique
-  shopName    String?
-  password    String
-  phone       String?
-  address     String?
-  isActive    Boolean       @default(true)
-  role        Role          @default(BUYER)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  session     Session[]
-  orders      OrderDetail[]
-  Product     Product[]
-  CartItem    CartItem[]
+  id        Int           @id @default(autoincrement())
+  firstName String?
+  lastName  String?
+  email     String        @unique
+  shopName  String?
+  password  String
+  phone     String?
+  address   String?
+  isActive  Boolean       @default(true)
+  role      Role          @default(BUYER)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  session   Session[]
+  orders    OrderDetail[]
+  Product   Product[]
+  CartItem  CartItem[]
 
-  OrderDetail OrderDetail[] @relation("UserOrders")
+  OrderDetail     OrderDetail[] @relation("UserOrders")
   ShopOrderDetail OrderDetail[] @relation("ShopOrders")
 }
 
@@ -53,7 +53,6 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
-
 
 model CartItem {
   id        Int      @id @default(autoincrement())
@@ -68,108 +67,107 @@ model CartItem {
 }
 
 model Product {
-  id          Int              @id @default(autoincrement())
-  name        String
-  description String?
-  price       Float
-  userId      Int
-  quantity    Int
-  image       String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?
+  price          Float
+  star           Int?     @default(2)
+  userId         Int
+  quantity       Int
+  image          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   groupProductId Int
-  cityId Int
+  cityId         Int
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  cartItems     CartItem[]
-  orderItems    OrderItem[]
-  categories    Category[]
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  categories   Category[]
   groupProduct GroupProduct @relation(fields: [groupProductId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  City City @relation(fields: [cityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  city         City         @relation(fields: [cityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model OrderDetail {
-  id        Int           @id @default(autoincrement())
-  userId    Int
+  id          Int      @id @default(autoincrement())
+  userId      Int
   addressLine String
-  phone      String
+  phone       String
   total       Float
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  shopId   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  shopId      Int
 
-  user        User        @relation("UserOrders", fields: [userId], references: [id])
+  user        User          @relation("UserOrders", fields: [userId], references: [id])
   items       OrderItem[]
-  shop        User        @relation("ShopOrders", fields: [shopId], references: [id])
+  shop        User          @relation("ShopOrders", fields: [shopId], references: [id])
   OrderStatus OrderStatus[]
 
   User User[]
 }
 
 model OrderItem {
-  id          Int      @id @default(autoincrement())
-  orderId     Int
-  productId   Int
-  quantity    Int
-  unitPrice   Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  unitPrice Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   order   OrderDetail @relation(fields: [orderId], references: [id])
   product Product     @relation(fields: [productId], references: [id])
 }
 
 model Category {
-  id        Int                @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  isActive  Boolean            @default(true)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   products Product[]
 }
 
 model GroupProduct {
-  id        Int                @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   image     String?
-  isActive  Boolean            @default(true)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   products Product[]
 }
 
 model City {
-  id        Int                @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  isActive  Boolean            @default(true)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   Products Product[]
 }
 
 model OrderStatus {
-  id         Int      @id @default(autoincrement())
-  orderId    Int
-  statusId   Int
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  statusId  Int
+  createdAt DateTime @default(now())
 
-  orderDetail  OrderDetail  @relation(fields: [orderId], references: [id])
-  status        Status @relation(fields: [statusId], references: [id])
+  orderDetail OrderDetail @relation(fields: [orderId], references: [id])
+  status      Status      @relation(fields: [statusId], references: [id])
 
   @@unique([orderId, statusId])
 }
 
 model Status {
-  id        Int        @id @default(autoincrement())
+  id        Int             @id @default(autoincrement())
   type      OrderStatusType
   name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   OrderStatus OrderStatus[]
 }

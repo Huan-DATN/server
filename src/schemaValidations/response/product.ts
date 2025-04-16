@@ -9,3 +9,8 @@ export const ProductListRes = z.object({
   }),
   message: z.string(),
 });
+
+export const ProductRes = z.object({
+  data: ProductSchema,
+  message: z.string(),
+});

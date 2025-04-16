@@ -61,6 +61,7 @@ export const ProductSchema = z.object({
   userId: z.number().int(),
   quantity: z.number().int(),
   image: z.string().nullable().optional(),
+  star: z.number().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
   groupProductId: z.number().int(),
@@ -86,6 +87,12 @@ export const ProductSchema = z.object({
     .object({
       id: z.number().int(),
       shopName: z.string().nullable().optional(),
+    })
+    .optional(),
+  city: z
+    .object({
+      id: z.number().int(),
+      name: z.string(),
     })
     .optional(),
 });
@@ -162,4 +169,11 @@ export const OrderStatusSchema = z.object({
   orderId: z.number().int(),
   statusId: z.number().int(),
   createdAt: z.date(),
+});
+
+export const CitySchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });

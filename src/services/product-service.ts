@@ -92,6 +92,8 @@ const getProductById = async (id: number) => {
     include: {
       user: true,
       categories: true,
+      city: true,
+      groupProduct: true,
     },
   });
   if (!product) {
