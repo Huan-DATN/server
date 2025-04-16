@@ -25,6 +25,7 @@ const registerService = async (body: RegisterBodyType) => {
 
     const sessionToken = signSessionToken({
       userId: user.id,
+      role: user.role,
     });
     const expiresAt = addMilliseconds(
       new Date(),
@@ -78,6 +79,7 @@ const validateLogin = async (body: LoginBodyType) => {
   }
   const sessionToken = signSessionToken({
     userId: user.id,
+    role: user.role,
   });
   const expiresAt = addMilliseconds(
     new Date(),

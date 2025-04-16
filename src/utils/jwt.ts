@@ -5,11 +5,16 @@ import { TokenType } from "../constants/type";
 import { TokenPayload } from "../types/jwt.types";
 
 export const signSessionToken = (
-  payload: Pick<TokenPayload, "userId">,
+  payload: Pick<TokenPayload, "userId" | "role">,
   options?: jwt.SignOptions,
 ) => {
   return jwt.sign(
-    { ...payload, tokenType: TokenType.SessionToken },
+    {
+      ...payload,
+      userId: payload.userId,
+      role: payload.role,
+      tokenType: TokenType.SessionToken,
+    },
     Config.SESSION_TOKEN_SECRET,
     {
       algorithm: "HS256",

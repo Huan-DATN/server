@@ -4,6 +4,7 @@ import {
   AddItemToCartBodyType,
   UpdateCartItemBodyType,
 } from "../schemaValidations/cart.schema";
+import { CartRes } from "../schemaValidations/response/cart";
 import CartService from "../services/cart-service";
 import { BaseController } from "./abstractions/base-controller";
 
@@ -64,10 +65,12 @@ export default class CartController extends BaseController {
       const userId = Number(request.headers.userId as string);
       const cart = await CartService.getCart(userId);
 
-      return response.json({
-        message: "Lấy giỏ hàng thành công",
-        data: cart,
-      });
+      return response.json(
+        CartRes.parse({
+          message: "Lấy giỏ hàng thành công",
+          data: cart,
+        }),
+      );
     } catch (error) {
       next(error);
     }

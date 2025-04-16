@@ -4,6 +4,7 @@ import {
   AddItemToCartBodyType,
   UpdateCartItemBodyType,
 } from "../schemaValidations/cart.schema";
+import { CartResType } from "../schemaValidations/response/cart";
 import { NotFoundError, StatusError } from "../utils/errors";
 
 const addItemToCart = async (userId: number, body: AddItemToCartBodyType) => {
@@ -52,7 +53,7 @@ const addItemToCart = async (userId: number, body: AddItemToCartBodyType) => {
   }
 };
 
-const getCart = async (userId: number) => {
+const getCart = async (userId: number): Promise<CartResType["data"]> => {
   const cartItems = await prismaClient.cartItem.findMany({
     where: {
       userId,
@@ -60,13 +61,44 @@ const getCart = async (userId: number) => {
     include: {
       product: {
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              shopName: true,
+              phone: true,
+              address: true,
+            },
+          },
         },
       },
     },
   });
 
-  return cartItems;
+  if (!cartItems || cartItems.length === 0) {
+    return [];
+  }
+
+  const groupedCartItems = cartItems.reduce((acc, item) => {
+    const shopId = item.product.userId;
+    if (!acc[shopId]) {
+      acc[shopId] = {
+        shop: {
+          id: shopId,
+          shopName: item.product.user.shopName,
+          phone: item.product.user.phone,
+          address: item.product.user.address,
+        },
+        cartItems: [],
+        totalPrice: 0,
+      };
+    }
+    acc[shopId].cartItems.push(item);
+    acc[shopId].totalPrice =
+      (acc[shopId].totalPrice || 0) + item.product.price * item.quantity;
+    return acc;
+  }, {} as Record<number, { shop: any; cartItems: typeof cartItems; totalPrice: number }>);
+
+  return Object.values(groupedCartItems);
 };
 
 const deleteCartItem = async (userId: number, cartItemId: number) => {
