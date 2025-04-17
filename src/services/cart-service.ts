@@ -177,10 +177,34 @@ const updateCartItem = async (
   return cartItem;
 };
 
+const deleteCartItemByShop = async (userId: number, shopId: number) => {
+  const cartItems = await prismaClient.cartItem.findMany({
+    where: {
+      userId,
+      product: {
+        userId: shopId,
+      },
+    },
+  });
+  if (!cartItems || cartItems.length === 0) {
+    throw new NotFoundError("Không có sản phẩm nào trong giỏ hàng");
+  }
+
+  await prismaClient.cartItem.deleteMany({
+    where: {
+      userId,
+      product: {
+        userId: shopId,
+      },
+    },
+  });
+};
+
 const CartService = {
   addItemToCart,
   getCart,
   deleteCartItem,
   updateCartItem,
+  deleteCartItemByShop,
 };
 export default CartService;

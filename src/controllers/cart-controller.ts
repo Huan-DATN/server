@@ -33,6 +33,11 @@ export default class CartController extends BaseController {
       checkLoggedInMiddleware,
       this.deleteCartItem,
     );
+    this.router.delete(
+      `${this.path}/shop/:shopId`,
+      checkLoggedInMiddleware,
+      this.deleteCartItemByShop,
+    );
   }
 
   //#region Add item to cart
@@ -121,4 +126,22 @@ export default class CartController extends BaseController {
     }
   };
   // #endregion
+  // #region Delete cart item by shop
+  deleteCartItemByShop = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const shopId = Number(request.params.shopId);
+      const userId = Number(request.headers.userId as string);
+      await CartService.deleteCartItemByShop(userId, shopId);
+
+      return response.json({
+        message: "Xóa sản phẩm trong giỏ hàng thành công",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
