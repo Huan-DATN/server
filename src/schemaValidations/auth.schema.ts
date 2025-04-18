@@ -1,5 +1,5 @@
 import z from "zod";
-import { UserSchema } from "./user.schema";
+import { UserSchema } from "./schema";
 
 export const RegisterBody = z
   .object({

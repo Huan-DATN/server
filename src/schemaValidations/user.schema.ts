@@ -1,47 +1,51 @@
 import z from "zod";
-
-export const UserSchema = z
-  .object({
-    id: z.number(),
-    password: z.string(),
-    firstName: z.string().nullable(),
-    lastName: z.string().nullable(),
-    email: z.string(),
-    telephone: z.string().nullable(),
-    role: z.enum(["SELLER", "BUYER", "ADMIN"]),
-    createdAt: z.date(),
-    modifiedAt: z.date(),
-    isActive: z.boolean(),
-  })
-  .strict();
+import { UserSchema } from "./schema";
 
 export const UserRes = z
   .object({
-    data: z.object({
-      id: z.number(),
-      password: z.string(),
-      firstName: z.string().nullable(),
-      lastName: z.string().nullable(),
-      email: z.string(),
-      telephone: z.string().nullable(),
-      role: z.enum(["SELLER", "BUYER", "ADMIN"]),
-      createdAt: z.date(),
-      modifiedAt: z.date(),
-      isActive: z.boolean(),
-    }),
+    data: UserSchema,
     message: z.string(),
   })
   .strict();
 
 export type UserResType = z.TypeOf<typeof UserRes>;
 
-export const UpdateMeBody = z.object({
-  name: z.string().trim().min(2).max(256),
-  phone: z.string().min(10).max(15),
-  firstName: z.string().min(2).max(256),
-  lastName: z.string().min(2).max(256),
-  isActive: z.coerce.boolean(),
-});
+export const UpdateMeBody = z
+  .object({
+    phone: z
+      .string()
+      .min(10, { message: "Số điện thoại phải có ít nhất 10 ký tự." })
+      .max(15, { message: "Số điện thoại không được vượt quá 15 ký tự." })
+      .optional(),
+    firstName: z
+      .string()
+      .min(2, { message: "Tên phải có ít nhất 2 ký tự." })
+      .max(256, { message: "Tên không được vượt quá 256 ký tự." })
+      .optional(),
+    lastName: z
+      .string()
+      .min(2, { message: "Họ phải có ít nhất 2 ký tự." })
+      .max(256, { message: "Họ không được vượt quá 256 ký tự." })
+      .optional(),
+    address: z
+      .string()
+      .min(2, { message: "Địa chỉ phải có ít nhất 2 ký tự." })
+      .max(256, { message: "Địa chỉ không được vượt quá 256 ký tự." })
+      .optional(),
+    shopName: z
+      .string()
+      .min(2, { message: "Tên cửa hàng phải có ít nhất 2 ký tự." })
+      .max(256, { message: "Tên cửa hàng không được vượt quá 256 ký tự." })
+      .optional(),
+    image: z
+      .object({
+        id: z.number().int(),
+        publicUrl: z.string(),
+      })
+      .optional()
+      .nullable(),
+  })
+  .strict();
 
 export type UpdateMeBodyType = z.TypeOf<typeof UpdateMeBody>;
 

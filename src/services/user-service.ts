@@ -28,23 +28,35 @@ const getUserBySessionToken = async (sessionToken: string) => {
   return session.user;
 };
 
-const getMe = async (sessionToken: string) => {
-  const user = await getUserBySessionToken(sessionToken);
+const getMe = async (userId: number) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      image: true,
+    },
+  });
 
   return user;
 };
 
-const updateMe = async (sessionToken: string, data: UpdateMeBodyType) => {
-  const user = await getUserBySessionToken(sessionToken);
-
-  const updatedUser = await prismaClient.user.update({
+const updateMe = async (userId: number, data: UpdateMeBodyType) => {
+  const user = await prismaClient.user.update({
     where: {
-      id: user.id,
+      id: userId,
     },
-    data,
+    data: {
+      ...data,
+      image: data.image
+        ? {
+            connect: { id: data.image.id },
+          }
+        : undefined,
+    },
   });
 
-  return updatedUser;
+  return user;
 };
 
 const updatePassword = async (
@@ -96,7 +108,14 @@ const updateUserById = async (id: number, data: UpdateMeBodyType) => {
     where: {
       id,
     },
-    data,
+    data: {
+      ...data,
+      image: data.image
+        ? {
+            connect: { id: data.image.id },
+          }
+        : undefined,
+    },
   });
   if (!user) {
     throw new EntityError([

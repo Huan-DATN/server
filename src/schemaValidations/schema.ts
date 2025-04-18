@@ -23,6 +23,12 @@ export const UserSchema = z.object({
   role: RoleEnum.default("BUYER"),
   createdAt: z.date(),
   updatedAt: z.date(),
+  image: z
+    .object({
+      id: z.number().int(),
+      publicUrl: z.string(),
+    })
+    .nullable(),
 });
 
 // Session
@@ -42,15 +48,13 @@ export const CartItemSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
 
-  product: z
-    .object({
-      id: z.number().int(),
-      name: z.string(),
-      price: z.number(),
-      description: z.string().nullable().optional(),
-      image: z.string().nullable().optional(),
-    })
-    .optional(),
+  product: z.object({
+    id: z.number().int(),
+    name: z.string(),
+    price: z.number(),
+    description: z.string().nullable().optional(),
+    image: z.string().nullable().optional(),
+  }),
 });
 
 // Product
@@ -95,6 +99,14 @@ export const ProductSchema = z.object({
       id: z.number().int(),
       name: z.string(),
     })
+    .optional(),
+  images: z
+    .array(
+      z.object({
+        id: z.number().int(),
+        publicUrl: z.string(),
+      }),
+    )
     .optional(),
 });
 
@@ -149,10 +161,15 @@ export const CategorySchema = z.object({
 export const GroupProductSchema = z.object({
   id: z.number().int(),
   name: z.string(),
-  image: z.string().nullable().optional(),
   isActive: z.boolean().default(true),
   createdAt: z.date(),
   updatedAt: z.date(),
+  image: z
+    .object({
+      id: z.number().int(),
+      publicUrl: z.string(),
+    })
+    .optional(),
 });
 
 // Status
@@ -175,6 +192,14 @@ export const OrderStatusSchema = z.object({
 export const CitySchema = z.object({
   id: z.number().int(),
   name: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const ImageSchema = z.object({
+  id: z.number().int(),
+  publicUrl: z.string(),
+  productId: z.number().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

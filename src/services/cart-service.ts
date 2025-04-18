@@ -79,7 +79,7 @@ const getCart = async (userId: number): Promise<CartResType["data"]> => {
   }
 
   const groupedCartItems = cartItems.reduce((acc, item) => {
-    const shopId = item.product.userId;
+    const shopId = item.product!.userId;
     if (!acc[shopId]) {
       acc[shopId] = {
         shop: {

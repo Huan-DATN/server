@@ -37,6 +37,8 @@ model User {
   role      Role          @default(BUYER)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  imageId   Int?          @unique
+  image     Image?        @relation(fields: [imageId], references: [id])
   session   Session[]
   orders    OrderDetail[]
   Product   Product[]
@@ -86,6 +88,7 @@ model Product {
   categories   Category[]
   groupProduct GroupProduct @relation(fields: [groupProductId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   city         City         @relation(fields: [cityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  images       Image[]
 }
 
 model OrderDetail {
@@ -132,11 +135,12 @@ model Category {
 model GroupProduct {
   id        Int      @id @default(autoincrement())
   name      String
-  image     String?
+  imageId   Int?     @unique
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  image    Image?    @relation(fields: [imageId], references: [id])
   products Product[]
 }
 
@@ -170,4 +174,16 @@ model Status {
   updatedAt DateTime        @updatedAt
 
   OrderStatus OrderStatus[]
+}
+
+model Image {
+  id        Int      @id @default(autoincrement())
+  publicUrl String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  productId Int?
+
+  product      Product?      @relation(fields: [productId], references: [id])
+  user         User?
+  groupProduct GroupProduct?
 }

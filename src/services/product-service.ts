@@ -102,6 +102,41 @@ const getProductById = async (id: number) => {
   return product;
 };
 
-const ProductService = { getAllProducts, getProductById };
+const getProductsShop = async (
+  id: number,
+  { page, limit }: PaginationReqType,
+) => {
+  const [products, totalLength] = await Promise.all([
+    prismaClient.product.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      where: {
+        userId: id,
+      },
+      include: {
+        user: true,
+        categories: true,
+        groupProduct: true,
+      },
+    }),
+    prismaClient.product.count({
+      where: {
+        userId: id,
+      },
+    }),
+  ]);
+  const totalProducts = totalLength;
+  const totalPages = Math.ceil(totalLength / limit);
+  return {
+    products,
+    totalProducts,
+    totalPages,
+  };
+};
+
+const ProductService = { getAllProducts, getProductById, getProductsShop };
 
 export default ProductService;

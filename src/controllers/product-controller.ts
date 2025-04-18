@@ -18,6 +18,7 @@ export default class ProductController extends BaseController {
   public initializeRoutes() {
     this.router.get(`${this.path}`, this.getAllProducts);
     this.router.get(`${this.path}/:id`, this.getProductById);
+    this.router.get(`${this.path}/shop/:id`, this.getProductsShop);
     // this.router.post(`${this.path}`, this.createProduct);
     // this.router.put(`${this.path}/:id`, this.updateProductById);
     // this.router.delete(`${this.path}/:id`, this.deleteProductById);
@@ -78,4 +79,38 @@ export default class ProductController extends BaseController {
       next(error);
     }
   };
+
+  // #region Shop Products
+  getProductsShop = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { id } = request.params;
+      const { page, limit } = request.query;
+
+      const data = await ProductService.getProductsShop(
+        Number(id),
+        PaginationReq.parse({
+          page,
+          limit,
+        }),
+      );
+
+      return response.status(200).json(
+        ProductListRes.parse({
+          data: data.products,
+          meta: {
+            total: data.totalProducts,
+            totalPages: data.totalPages,
+          },
+          message: "Products fetched successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+  // #endregion
 }

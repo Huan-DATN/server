@@ -1,6 +1,7 @@
 import express from "express";
 import { multerUploadMiddleware } from "../libs/multer";
 import { CloudinaryProvider } from "../provider/cloudinaryProvider";
+import { ImageRes } from "../schemaValidations/response/media";
 import { BaseController } from "./abstractions/base-controller";
 export default class MediaController extends BaseController {
   public path = "/media";
@@ -34,15 +35,23 @@ export default class MediaController extends BaseController {
       throw new Error("File is not found");
     }
 
-    console.log(file);
-    const uploadResult = await CloudinaryProvider.streamUpload(
+    const uploadResult = (await CloudinaryProvider.streamUpload(
       file.buffer,
       "test",
-    );
-    return response.json({
-      message: "Upload successfully",
-      data: uploadResult,
+    )) as { url: string; publicId: string };
+
+    const image = await this.prisma.image.create({
+      data: {
+        publicUrl: uploadResult.url,
+      },
     });
+
+    return response.json(
+      ImageRes.parse({
+        message: "Upload successfully",
+        data: image,
+      }),
+    );
   };
 
   deleteMedia = async (

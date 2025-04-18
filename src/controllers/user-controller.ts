@@ -1,7 +1,7 @@
 import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { PaginationReq } from "../schemaValidations/common.schema";
-import { SearchUsersBody } from "../schemaValidations/user.schema";
+import { SearchUsersBody, UserRes } from "../schemaValidations/user.schema";
 import UserService from "../services/user-service";
 import { EntityError } from "../utils/errors";
 import { BaseController } from "./abstractions/base-controller";
@@ -32,7 +32,7 @@ export default class UserController extends BaseController {
       this.getUserById,
     );
     this.router.put(
-      `${this.path}/update/:id`,
+      `${this.path}/:id`,
       checkLoggedInMiddleware,
       this.updateUserById,
     );
@@ -46,24 +46,16 @@ export default class UserController extends BaseController {
     next: express.NextFunction,
   ) => {
     try {
-      const sessionToken = request.headers.authorization?.split(" ")[1];
-      if (!sessionToken) {
-        throw new EntityError([
-          {
-            field: "sessionToken",
-            message: "Session Token is invalid",
-          },
-        ]);
-      }
+      const userId = Number(request.headers.userId as string);
 
-      const user = await UserService.getMe(sessionToken);
+      const user = await UserService.getMe(userId);
 
-      return response.send({
-        message: "Fetch data successfully",
-        data: {
-          ...user,
-        },
-      });
+      return response.send(
+        UserRes.parse({
+          message: "Fetch data successfully",
+          data: user,
+        }),
+      );
     } catch (error) {
       next(error);
     }
@@ -77,21 +69,12 @@ export default class UserController extends BaseController {
     next: express.NextFunction,
   ) => {
     try {
-      const sessionToken = request.headers.authorization?.split(" ")[1];
-      if (!sessionToken) {
-        throw new EntityError([
-          {
-            field: "sessionToken",
-            message: "Session Token is invalid",
-          },
-        ]);
-      }
-
       const data = request.body;
-      const updatedUser = await UserService.updateMe(sessionToken, data);
+      const userId = Number(request.headers.userId as string);
+      const updatedUser = await UserService.updateMe(userId, data);
 
       return response.send({
-        message: "Update data successfully",
+        message: "Cập nhật thông tin thành công",
         data: {
           ...updatedUser,
         },
