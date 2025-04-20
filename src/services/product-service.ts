@@ -1,6 +1,7 @@
 import prismaClient from "../database";
 import { PaginationReqType } from "../schemaValidations/common.schema";
 import { SearchProductQueryType } from "../schemaValidations/product.schema";
+import { CreateProductBodyType } from "../schemaValidations/request/create-product";
 import { NotFoundError } from "../utils/errors";
 
 const getAllProducts = async (
@@ -105,6 +106,7 @@ const getProductById = async (id: number) => {
 const getProductsShop = async (
   id: number,
   { page, limit }: PaginationReqType,
+  isActive: boolean = true,
 ) => {
   const [products, totalLength] = await Promise.all([
     prismaClient.product.findMany({
@@ -115,6 +117,7 @@ const getProductsShop = async (
       },
       where: {
         userId: id,
+        isActive: true,
       },
       include: {
         user: true,
@@ -137,6 +140,58 @@ const getProductsShop = async (
   };
 };
 
-const ProductService = { getAllProducts, getProductById, getProductsShop };
+const createProduct = async (
+  userId: number,
+  {
+    name,
+    description,
+    price,
+    cityId,
+    groupProductId,
+    categories,
+    images,
+    star,
+    quantity,
+  }: CreateProductBodyType,
+) => {
+  const product = await prismaClient.product.create({
+    data: {
+      name,
+      description,
+      price,
+      cityId,
+      groupProductId,
+      userId,
+      quantity,
+      star,
+      image: (
+        await prismaClient.image.findFirst({
+          where: {
+            id: images[0],
+          },
+        })
+      )?.publicUrl,
+      categories: {
+        connect: categories.map((id) => ({
+          id,
+        })),
+      },
+      isActive: true,
+      images: {
+        connect: images.map((id) => ({
+          id,
+        })),
+      },
+    },
+  });
+
+  return product;
+};
+const ProductService = {
+  getAllProducts,
+  getProductById,
+  getProductsShop,
+  createProduct,
+};
 
 export default ProductService;

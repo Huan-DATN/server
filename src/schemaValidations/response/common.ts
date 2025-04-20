@@ -9,7 +9,7 @@ export const GroupProductsListRes = z.object({
 export type GroupProductsListResType = z.TypeOf<typeof GroupProductsListRes>;
 
 export const CategoryListRes = z.object({
-  data: CategorySchema,
+  data: z.array(CategorySchema),
   message: z.string(),
 });
 export type CategoryListResType = z.TypeOf<typeof CategoryListRes>;

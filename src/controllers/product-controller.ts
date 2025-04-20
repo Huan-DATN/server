@@ -1,4 +1,5 @@
 import express from "express";
+import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { PaginationReq } from "../schemaValidations/common.schema";
 import { SearchProductQuery } from "../schemaValidations/product.schema";
 import {
@@ -17,9 +18,18 @@ export default class ProductController extends BaseController {
 
   public initializeRoutes() {
     this.router.get(`${this.path}`, this.getAllProducts);
+    this.router.get(
+      `${this.path}/me`,
+      checkLoggedInMiddleware,
+      this.getProductsByShop,
+    );
     this.router.get(`${this.path}/:id`, this.getProductById);
     this.router.get(`${this.path}/shop/:id`, this.getProductsShop);
-    // this.router.post(`${this.path}`, this.createProduct);
+    this.router.post(
+      `${this.path}/`,
+      checkLoggedInMiddleware,
+      this.createProduct,
+    );
     // this.router.put(`${this.path}/:id`, this.updateProductById);
     // this.router.delete(`${this.path}/:id`, this.deleteProductById);
   }
@@ -113,4 +123,59 @@ export default class ProductController extends BaseController {
     }
   };
   // #endregion
+
+  // #region get Products by user
+  getProductsByShop = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const shopId = Number(request.headers.userId);
+      const { page, limit } = request.query;
+
+      const data = await ProductService.getProductsShop(
+        Number(shopId),
+        PaginationReq.parse({
+          page,
+          limit,
+        }),
+        true,
+      );
+
+      return response.status(200).json(
+        ProductListRes.parse({
+          data: data.products,
+          meta: {
+            total: data.totalProducts,
+            totalPages: data.totalPages,
+          },
+          message: "Products fetched successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+  // #endregion
+  // #region create Product
+  createProduct = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const shopId = Number(request.headers.userId);
+      const data = await ProductService.createProduct(shopId, request.body);
+
+      return response.status(201).json(
+        ProductRes.parse({
+          data,
+          message: "Product created successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
 }
