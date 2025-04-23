@@ -2,7 +2,8 @@ import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import {
   LoginBodyType,
-  RegisterBodyType,
+  SellerRegisterBodyType,
+  UserRegisterBodyType,
 } from "../schemaValidations/auth.schema";
 import * as AuthService from "../services/auth-service";
 import { BaseController } from "./abstractions/base-controller";
@@ -64,7 +65,12 @@ export default class AuthController extends BaseController {
   ) => {
     // Bạn có thể thêm xác thực ở đây
     try {
-      const body = request.body as RegisterBodyType;
+      let body;
+      if (request.body.role === "BUYER") {
+        body = request.body as UserRegisterBodyType;
+      } else {
+        body = request.body as SellerRegisterBodyType;
+      }
       const { session, user } = await AuthService.registerService(body);
       return response.send({
         message: "Đăng ký thành công",

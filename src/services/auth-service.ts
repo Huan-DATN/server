@@ -5,23 +5,41 @@ import { PrismaErrorCode } from "../constants/error-reference";
 import prismaClient from "../database";
 import {
   LoginBodyType,
-  RegisterBodyType,
+  SellerRegisterBodyType,
+  UserRegisterBodyType,
 } from "../schemaValidations/auth.schema";
 import { comparePassword, hashPassword } from "../utils/crypto";
 import { EntityError, isPrismaClientKnownRequestError } from "../utils/errors";
 import { signSessionToken } from "../utils/jwt";
 
-const registerService = async (body: RegisterBodyType) => {
+const registerService = async (
+  body: UserRegisterBodyType | SellerRegisterBodyType,
+) => {
   try {
     const hashedPassword = await hashPassword(body.password);
-    const user = await prismaClient.user.create({
-      data: {
-        lastName: body.lastName,
-        firstName: body.firstName,
-        email: body.email,
-        password: hashedPassword,
-      },
-    });
+    let user;
+
+    if (body.role === "SELLER") {
+      user = await prismaClient.user.create({
+        data: {
+          shopName: body.shopName,
+          phone: body.phone,
+          email: body.email,
+          password: hashedPassword,
+          role: body.role,
+          isActive: true,
+        },
+      });
+    } else {
+      user = await prismaClient.user.create({
+        data: {
+          lastName: body.lastName,
+          firstName: body.firstName,
+          email: body.email,
+          password: hashedPassword,
+        },
+      });
+    }
 
     const sessionToken = signSessionToken({
       userId: user.id,
