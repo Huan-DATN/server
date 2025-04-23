@@ -59,6 +59,7 @@ const getAllProducts = async (
         user: true,
         categories: true,
         groupProduct: true,
+        images: true,
       },
     }),
     prismaClient.product.count({
@@ -95,6 +96,7 @@ const getProductById = async (id: number) => {
       categories: true,
       city: true,
       groupProduct: true,
+      images: true,
     },
   });
   if (!product) {
@@ -123,6 +125,7 @@ const getProductsShop = async (
         user: true,
         categories: true,
         groupProduct: true,
+        images: true,
       },
     }),
     prismaClient.product.count({
@@ -164,13 +167,6 @@ const createProduct = async (
       userId,
       quantity,
       star,
-      image: (
-        await prismaClient.image.findFirst({
-          where: {
-            id: images[0],
-          },
-        })
-      )?.publicUrl,
       categories: {
         connect: categories.map((id) => ({
           id,

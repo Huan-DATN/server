@@ -1,6 +1,7 @@
 import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { PaginationReq } from "../schemaValidations/common.schema";
+import { ShopsListRes } from "../schemaValidations/response/user";
 import { SearchUsersBody, UserRes } from "../schemaValidations/user.schema";
 import UserService from "../services/user-service";
 import { EntityError } from "../utils/errors";
@@ -16,6 +17,7 @@ export default class UserController extends BaseController {
   public initializeRoutes() {
     // Bạn có thể thêm put, patch, delete sau.
     this.router.get(`${this.path}/me`, checkLoggedInMiddleware, this.getMe);
+    this.router.get(`${this.path}/shops`, this.getShops);
     this.router.put(
       `${this.path}/update/me`,
       checkLoggedInMiddleware,
@@ -209,4 +211,37 @@ export default class UserController extends BaseController {
     }
   };
   //#endregion
+
+  //#region getShops
+  getShops = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { page, limit } = request.query;
+      const isActive = Boolean(request.query.isActive ?? true);
+      const { formattedShops, totalPages, totalShops } =
+        await UserService.getShops(
+          PaginationReq.parse({
+            page,
+            limit,
+          }),
+          isActive,
+        );
+
+      return response.send(
+        ShopsListRes.parse({
+          message: "Fetch data successfully",
+          data: formattedShops,
+          meta: {
+            total: totalShops,
+            totalPages: totalPages,
+          },
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
 }

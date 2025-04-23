@@ -1,5 +1,7 @@
 import { z } from "zod";
 import prismaClient from "../database";
+import { PaginationReqType } from "../schemaValidations/common.schema";
+import { ShopsListResType } from "../schemaValidations/response/user";
 import {
   SearchUsersBody,
   UpdateMeBodyType,
@@ -205,6 +207,80 @@ const deleteUserById = async (id: number) => {
   return user;
 };
 
+// #region getShops
+const getShops = async (
+  { page, limit }: PaginationReqType,
+  isActive: boolean = true,
+) => {
+  const [shops, totalShops] = await Promise.all([
+    prismaClient.user.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      where: {
+        AND: [
+          {
+            role: {
+              equals: "SELLER",
+            },
+          },
+          {
+            isActive,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        shopName: true,
+        address: true,
+        image: true,
+        _count: {
+          select: {
+            Product: true,
+          },
+        },
+      },
+    }),
+    prismaClient.user.count({
+      where: {
+        AND: [
+          {
+            role: {
+              equals: "SELLER",
+            },
+          },
+          {
+            isActive,
+          },
+        ],
+      },
+    }),
+  ]);
+
+  const formattedShops: ShopsListResType["data"] = shops.map((shop) => ({
+    id: shop.id,
+    shopName: shop.shopName ?? "Unknown Shop Name",
+    address: shop.address ?? "Unknown Address",
+    productsTotal: shop._count.Product,
+    image: shop.image
+      ? {
+          id: shop.image.id,
+          publicUrl: shop.image.publicUrl,
+        }
+      : null,
+  }));
+
+  const totalPages = Math.ceil(totalShops / limit);
+
+  return {
+    formattedShops,
+    totalShops,
+    totalPages,
+  };
+};
+
 const UserService = {
   getMe,
   updateMe,
@@ -213,5 +289,6 @@ const UserService = {
   updateUserById,
   getAllUsers,
   deleteUserById,
+  getShops,
 };
 export default UserService;
