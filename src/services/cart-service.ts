@@ -61,6 +61,7 @@ const getCart = async (userId: number): Promise<CartResType["data"]> => {
     include: {
       product: {
         include: {
+          images: true,
           user: {
             select: {
               id: true,

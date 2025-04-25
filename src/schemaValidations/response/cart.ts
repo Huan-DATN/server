@@ -9,6 +9,15 @@ export const CartRes = z.object({
         shopName: z.string().nullable().optional(),
         phone: z.string().nullable().optional(),
         address: z.string().nullable().optional(),
+        images: z
+          .array(
+            z.object({
+              id: z.number().int(),
+              publicUrl: z.string(),
+            }),
+          )
+          .nullable()
+          .optional(),
       }),
       cartItems: z.array(CartItemSchema),
       totalPrice: z.number(),
