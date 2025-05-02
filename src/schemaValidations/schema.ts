@@ -129,7 +129,66 @@ export const OrderDetailSchema = z.object({
     shopName: z.string().nullable().optional(),
     phone: z.string().nullable().optional(),
     address: z.string().nullable().optional(),
+    image: z
+      .object({
+        id: z.number().int(),
+        publicUrl: z.string(),
+      })
+      .nullable()
+      .optional(),
   }),
+  user: z
+    .object({
+      id: z.number().int(),
+      firstName: z.string().nullable().optional(),
+      lastName: z.string().nullable().optional(),
+      email: z.string().email(),
+      phone: z.string().nullable().optional(),
+    })
+    .optional(),
+  items: z.array(
+    z.object({
+      id: z.number().int(),
+      orderId: z.number().int(),
+      productId: z.number().int(),
+      quantity: z.number().int(),
+      unitPrice: z.number(),
+      createdAt: z.date(),
+      updatedAt: z.date(),
+
+      product: z
+        .object({
+          id: z.number().int(),
+          name: z.string(),
+          price: z.number(),
+          description: z.string().nullable().optional(),
+          images: z.array(
+            z.object({
+              id: z.number().int(),
+              publicUrl: z.string(),
+            }),
+          ),
+        })
+        .optional(),
+    }),
+  ),
+  OrderStatus: z.array(
+    z.object({
+      id: z.number().int(),
+      orderId: z.number().int(),
+      statusId: z.number().int(),
+      date: z.date(),
+      isActive: z.boolean().default(true),
+      createdAt: z.date(),
+      status: z.object({
+        id: z.number().int(),
+        type: OrderStatusTypeEnum,
+        name: z.string(),
+        createdAt: z.date(),
+        updatedAt: z.date(),
+      }),
+    }),
+  ),
 });
 
 // OrderItem

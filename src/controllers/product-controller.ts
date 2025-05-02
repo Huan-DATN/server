@@ -143,17 +143,6 @@ export default class ProductController extends BaseController {
         true,
       );
 
-      console.log(
-        ProductListRes.parse({
-          data: data.products,
-          meta: {
-            total: data.totalProducts,
-            totalPages: data.totalPages,
-          },
-          message: "Products fetched successfully",
-        }),
-      );
-
       return response.status(200).json(
         ProductListRes.parse({
           data: data.products,

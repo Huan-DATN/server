@@ -1,7 +1,10 @@
 import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { MessageRes } from "../schemaValidations/common.schema";
-import { CheckoutOrderRes } from "../schemaValidations/response/order";
+import {
+  CheckoutOrderRes,
+  OrderListRes,
+} from "../schemaValidations/response/order";
 import OrderService from "../services/order-service";
 import { BaseController } from "./abstractions/base-controller";
 
@@ -38,12 +41,24 @@ export default class OrderController extends BaseController {
     try {
       const userId = Number(request.headers.userId);
       // Logic to get all orders
-      const orders = await OrderService.getAllOrders(userId);
+      const { page, limit } = request.query;
+      const { orders, currentPage, totalPages, totalOrders } =
+        await OrderService.getAllOrders(userId, {
+          page: Number(page) || 1,
+          limit: Number(limit) || 10,
+        });
 
-      return response.json({
-        message: "Get all orders successfully",
-        data: orders,
-      });
+      return response.json(
+        OrderListRes.parse({
+          message: "Get all orders successfully",
+          data: orders,
+          meta: {
+            totalPages,
+            totalItems: totalOrders,
+            currentPage,
+          },
+        }),
+      );
     } catch (error) {
       next(error);
     }

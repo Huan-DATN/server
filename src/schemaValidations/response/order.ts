@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CartItemSchema, UserSchema } from "../schema";
+import { CartItemSchema, OrderDetailSchema, UserSchema } from "../schema";
 
 export const CheckoutOrderRes = z.object({
   message: z.string(),
@@ -11,3 +11,14 @@ export const CheckoutOrderRes = z.object({
 });
 
 export type CheckoutOrderResType = z.infer<typeof CheckoutOrderRes>;
+
+export const OrderListRes = z.object({
+  message: z.string(),
+  data: z.array(OrderDetailSchema),
+  meta: z.object({
+    totalPages: z.number(),
+    totalItems: z.number(),
+  }),
+});
+
+export type OrderListResType = z.infer<typeof OrderListRes>;

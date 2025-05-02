@@ -32,45 +32,68 @@ const getStatus = async (status: OrderStatusType) => {
   return orderStatus;
 };
 
-const getAllOrders = async (userId: number) => {
-  const orders = await prismaClient.orderDetail.findMany({
-    where: {
-      OR: [
-        {
-          userId: userId,
-        },
-        {
-          shopId: userId,
-        },
-      ],
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      shop: {
-        include: {
-          image: true,
-        },
+const getAllOrders = async (userId: number, { limit = 1, page = 10 }) => {
+  const skip = (page - 1) * limit;
+
+  const [orders, totalOrders] = await Promise.all([
+    prismaClient.orderDetail.findMany({
+      where: {
+        OR: [
+          {
+            userId: userId,
+          },
+          {
+            shopId: userId,
+          },
+        ],
       },
-      OrderStatus: {
-        include: {
-          status: true,
-        },
+      orderBy: {
+        createdAt: "desc",
       },
-      items: {
-        include: {
-          product: {
-            include: {
-              images: true,
+      skip,
+      take: limit,
+      include: {
+        shop: {
+          include: {
+            image: true,
+          },
+        },
+        OrderStatus: {
+          include: {
+            status: true,
+          },
+        },
+        items: {
+          include: {
+            product: {
+              include: {
+                images: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+    prismaClient.orderDetail.count({
+      where: {
+        OR: [
+          {
+            userId: userId,
+          },
+          {
+            shopId: userId,
+          },
+        ],
+      },
+    }),
+  ]);
 
-  return orders;
+  return {
+    orders,
+    totalOrders,
+    totalPages: Math.ceil(totalOrders / limit),
+    currentPage: page,
+  };
 };
 
 const getOrderById = async (orderId: number) => {
@@ -80,6 +103,7 @@ const getOrderById = async (orderId: number) => {
       id: orderId,
     },
     include: {
+      user: true,
       shop: {
         include: {
           image: true,
