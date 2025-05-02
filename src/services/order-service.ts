@@ -1,13 +1,18 @@
 import { StatusCodes } from "http-status-codes";
 import prismaClient from "../database";
+import { CheckoutOrderResType } from "../schemaValidations/response/order";
 import { NotFoundError, StatusError } from "../utils/errors";
 import UserService from "./user-service";
 
 enum OrderStatusType {
   PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  PROCESSING = "PROCESSING",
   SHIPPED = "SHIPPED",
   DELIVERED = "DELIVERED",
   CANCELLED = "CANCELLED",
+  RETURNED = "RETURNED",
+  FAILED = "FAILED",
 }
 
 const getStatus = async (status: OrderStatusType) => {
@@ -28,15 +33,38 @@ const getStatus = async (status: OrderStatusType) => {
 };
 
 const getAllOrders = async (userId: number) => {
-  // Logic to get all orders for a specific user
   const orders = await prismaClient.orderDetail.findMany({
     where: {
-      userId: userId,
+      OR: [
+        {
+          userId: userId,
+        },
+        {
+          shopId: userId,
+        },
+      ],
+    },
+    orderBy: {
+      createdAt: "desc",
     },
     include: {
+      shop: {
+        include: {
+          image: true,
+        },
+      },
+      OrderStatus: {
+        include: {
+          status: true,
+        },
+      },
       items: {
         include: {
-          product: true,
+          product: {
+            include: {
+              images: true,
+            },
+          },
         },
       },
     },
@@ -52,9 +80,23 @@ const getOrderById = async (orderId: number) => {
       id: orderId,
     },
     include: {
+      shop: {
+        include: {
+          image: true,
+        },
+      },
+      OrderStatus: {
+        include: {
+          status: true,
+        },
+      },
       items: {
         include: {
-          product: true,
+          product: {
+            include: {
+              images: true,
+            },
+          },
         },
       },
     },
@@ -63,7 +105,7 @@ const getOrderById = async (orderId: number) => {
   return order;
 };
 
-const createOrder = async (userId: number) => {
+const createOrder = async (userId: number, shopId: number) => {
   const user = await UserService.getUserById(userId);
 
   if (user.address === null) {
@@ -78,6 +120,9 @@ const createOrder = async (userId: number) => {
     .findMany({
       where: {
         userId: userId,
+        product: {
+          userId: shopId,
+        },
       },
       include: {
         product: true,
@@ -134,7 +179,7 @@ const createOrder = async (userId: number) => {
       total: totalAmount,
       addressLine: user.address,
       phone: user.phone,
-      shopId: 1, // Replace '1' with the appropriate shopId value
+      shopId,
       items: {
         create: items.map((item) => ({
           productId: item.productId,
@@ -146,7 +191,7 @@ const createOrder = async (userId: number) => {
     include: {
       items: {
         include: {
-          product: true,
+          product: {},
         },
       },
     },
@@ -169,10 +214,62 @@ const createOrder = async (userId: number) => {
   return order;
 };
 
+//#region Checkout
+
+const getCheckout = async (
+  userId: number,
+  shopId: number,
+): Promise<CheckoutOrderResType["data"]> => {
+  const cartItems = await prismaClient.cartItem.findMany({
+    where: {
+      userId,
+      product: {
+        userId: shopId,
+      },
+    },
+    include: {
+      product: {
+        include: {
+          images: true,
+          user: {
+            select: {
+              id: true,
+              shopName: true,
+              phone: true,
+              address: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!cartItems || cartItems.length === 0) {
+    throw new StatusError({
+      status: StatusCodes.BAD_REQUEST,
+      message: "User cart is empty",
+    });
+  }
+
+  const shop = await UserService.getUserById(shopId);
+  const totalPrice = cartItems.reduce((acc, item) => {
+    return acc + item.product.price * item.quantity;
+  }, 0);
+
+  return {
+    shop,
+    cartItems,
+    totalPrice,
+  };
+};
+
+//#region
+
 const OrderService = {
   getAllOrders,
   getOrderById,
   createOrder,
+  getCheckout,
 };
 
 export default OrderService;

@@ -19,9 +19,13 @@ enum Role {
 
 enum OrderStatusType {
   PENDING
+  CONFIRMED
+  PROCESSING
   SHIPPED
   DELIVERED
   CANCELLED
+  RETURNED
+  FAILED
 }
 
 model User {
@@ -159,6 +163,10 @@ model OrderStatus {
   orderId   Int
   statusId  Int
   createdAt DateTime @default(now())
+
+  date      DateTime @default(now())
+  isActive  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
 
   orderDetail OrderDetail @relation(fields: [orderId], references: [id])
   status      Status      @relation(fields: [statusId], references: [id])

@@ -93,6 +93,9 @@ const getUserById = async (id: number) => {
     where: {
       id,
     },
+    include: {
+      image: true,
+    },
   });
   if (!user) {
     throw new EntityError([

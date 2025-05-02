@@ -1,5 +1,7 @@
 import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
+import { MessageRes } from "../schemaValidations/common.schema";
+import { CheckoutOrderRes } from "../schemaValidations/response/order";
 import OrderService from "../services/order-service";
 import { BaseController } from "./abstractions/base-controller";
 
@@ -14,10 +16,20 @@ export default class OrderController extends BaseController {
   public initializeRoutes(): void {
     this.router.get(`${this.path}`, checkLoggedInMiddleware, this.getAllOrders);
     this.router.get(`${this.path}/:id`, this.getOrderById);
-    this.router.post(`${this.path}`, checkLoggedInMiddleware, this.createOrder);
+    this.router.get(
+      `${this.path}/:shopId/checkout`,
+      checkLoggedInMiddleware,
+      this.getCheckout,
+    );
+    this.router.post(
+      `${this.path}/:shopId`,
+      checkLoggedInMiddleware,
+      this.createOrder,
+    );
     this.router.put(`${this.path}/:id`, this.updateOrder);
   }
 
+  //#region Order
   public async getAllOrders(
     request: express.Request,
     response: express.Response,
@@ -36,6 +48,7 @@ export default class OrderController extends BaseController {
       next(error);
     }
   }
+  //#endregion
 
   public async getOrderById(
     request: express.Request,
@@ -63,14 +76,16 @@ export default class OrderController extends BaseController {
   ) {
     try {
       const userId = Number(request.headers.userId);
+      const shopId = Number(request.params.shopId);
 
       // Logic to create an order
-      const order = await OrderService.createOrder(userId);
+      const order = await OrderService.createOrder(userId, shopId);
 
-      return response.json({
-        message: "Create order successfully",
-        data: order,
-      });
+      return response.json(
+        MessageRes.parse({
+          message: "Create order successfully",
+        }),
+      );
     } catch (error) {
       next(error);
     }
@@ -92,6 +107,30 @@ export default class OrderController extends BaseController {
         message: "Update order successfully",
         // data: updatedOrder,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // #region Checkout
+  public async getCheckout(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) {
+    try {
+      const userId = Number(request.headers.userId);
+      const shopId = Number(request.params.shopId);
+
+      // Logic to get checkout
+      const data = await OrderService.getCheckout(userId, shopId);
+
+      return response.json(
+        CheckoutOrderRes.parse({
+          message: "Get checkout successfully",
+          data,
+        }),
+      );
     } catch (error) {
       next(error);
     }

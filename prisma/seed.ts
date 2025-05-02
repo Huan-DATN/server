@@ -117,13 +117,21 @@ async function main() {
         groupProductId: randomGroupProduct.id,
         cityId: randomCity.id,
         userId: randomUser.id,
-        image: `https://picsum.photos/200/300?random=${i + 1}`,
         createdAt: new Date(),
         updatedAt: new Date(),
         categories: {
           connect: {
             id: randomCategory.id,
           },
+        },
+        images: {
+          create: [
+            {
+              publicUrl: `https://picsum.photos/200/300?random=${i + 1}`,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ],
         },
       },
     });
@@ -132,9 +140,13 @@ async function main() {
   // Create Status
   const orderStatus = [
     { name: "PENDING" },
-    { name: "DELIVERED" },
+    { name: "CONFIRMED" },
+    { name: "PROCESSING" },
     { name: "SHIPPED" },
+    { name: "DELIVERED" },
     { name: "CANCELLED" },
+    { name: "RETURNED" },
+    { name: "FAILED" },
   ];
   for (const status of orderStatus) {
     await prisma.status.create({
