@@ -1,21 +1,12 @@
 import { StatusCodes } from "http-status-codes";
+import { OrderStatusEnum } from "../constants/orderStatusEnum";
 import prismaClient from "../database";
+import { PlanOrderBodyType } from "../schemaValidations/request/plan-order";
 import { CheckoutOrderResType } from "../schemaValidations/response/order";
 import { NotFoundError, StatusError } from "../utils/errors";
 import UserService from "./user-service";
 
-enum OrderStatusType {
-  PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  PROCESSING = "PROCESSING",
-  SHIPPED = "SHIPPED",
-  DELIVERED = "DELIVERED",
-  CANCELLED = "CANCELLED",
-  RETURNED = "RETURNED",
-  FAILED = "FAILED",
-}
-
-const getStatus = async (status: OrderStatusType) => {
+const getStatus = async (status: OrderStatusEnum) => {
   // Logic to get order status by status type
   const orderStatus = await prismaClient.status.findFirst({
     where: {
@@ -61,6 +52,9 @@ const getAllOrders = async (userId: number, { limit = 1, page = 10 }) => {
         OrderStatus: {
           include: {
             status: true,
+          },
+          orderBy: {
+            statusId: "desc",
           },
         },
         items: {
@@ -112,6 +106,9 @@ const getOrderById = async (orderId: number) => {
       OrderStatus: {
         include: {
           status: true,
+        },
+        orderBy: {
+          statusId: "desc",
         },
       },
       items: {
@@ -224,7 +221,7 @@ const createOrder = async (userId: number, shopId: number) => {
   await prismaClient.orderStatus.create({
     data: {
       orderId: order.id,
-      statusId: (await getStatus(OrderStatusType.PENDING)).id,
+      statusId: (await getStatus(OrderStatusEnum.PENDING)).id,
     },
   });
 
@@ -289,11 +286,113 @@ const getCheckout = async (
 
 //#region
 
+// #region Create Plan
+const createPlan = async (
+  shopId: number,
+  orderId: number,
+  planOrder: PlanOrderBodyType,
+) => {
+  const order = await prismaClient.orderDetail.findUnique({
+    where: {
+      id: orderId,
+    },
+  });
+
+  if (!order) {
+    throw new NotFoundError("Order not found");
+  }
+
+  if (order.shopId !== shopId) {
+    throw new StatusError({
+      status: StatusCodes.FORBIDDEN,
+      message: "You are not allowed to create a plan for this order",
+    });
+  }
+
+  await Promise.all(
+    planOrder.map(async (item) => {
+      const status = await prismaClient.status.findUnique({
+        where: {
+          id: item.statusId,
+        },
+      });
+
+      await prismaClient.orderStatus.create({
+        data: {
+          date: new Date(item.date), // Convert string to DateTime
+          status: {
+            connect: {
+              id: item.statusId,
+            },
+          },
+          orderDetail: {
+            connect: {
+              id: orderId,
+            },
+          },
+          isActive:
+            status?.type === OrderStatusEnum.CONFIRMED ||
+            status?.type === OrderStatusEnum.PENDING,
+        },
+      });
+    }),
+  );
+};
+
+// #endregion
+// #region Update Status
+const updateStatus = async (orderId: number, statusId: number) => {
+  await prismaClient.orderStatus.updateMany({
+    where: {
+      orderId,
+      statusId,
+    },
+    data: {
+      isActive: true,
+    },
+  });
+};
+// #endregion
+
+//#region Complete Order
+const completeOrder = async (orderId: number) => {
+  const order = await prismaClient.orderDetail.findUnique({
+    where: {
+      id: orderId,
+    },
+  });
+
+  if (!order) {
+    throw new NotFoundError("Order not found");
+  }
+
+  await prismaClient.orderStatus.create({
+    data: {
+      date: new Date(),
+      orderDetail: {
+        connect: {
+          id: orderId,
+        },
+      },
+      status: {
+        connect: {
+          id: (await getStatus(OrderStatusEnum.DELIVERED)).id,
+        },
+      },
+      isActive: true,
+    },
+  });
+};
+//#endregion
+
 const OrderService = {
   getAllOrders,
   getOrderById,
   createOrder,
   getCheckout,
+  createPlan,
+  updateStatus,
+  completeOrder,
 };
 
 export default OrderService;

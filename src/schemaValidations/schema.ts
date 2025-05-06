@@ -1,13 +1,8 @@
 import { z } from "zod";
+import { OrderStatusEnum } from "../constants/orderStatusEnum";
 
 // Enums
 export const RoleEnum = z.enum(["BUYER", "SELLER", "ADMIN"]);
-export const OrderStatusTypeEnum = z.enum([
-  "PENDING",
-  "SHIPPED",
-  "DELIVERED",
-  "CANCELLED",
-]);
 
 // User
 export const UserSchema = z.object({
@@ -182,7 +177,7 @@ export const OrderDetailSchema = z.object({
       createdAt: z.date(),
       status: z.object({
         id: z.number().int(),
-        type: OrderStatusTypeEnum,
+        type: z.nativeEnum(OrderStatusEnum),
         name: z.string(),
         createdAt: z.date(),
         updatedAt: z.date(),
@@ -238,7 +233,7 @@ export const GroupProductSchema = z.object({
 // Status
 export const StatusSchema = z.object({
   id: z.number().int(),
-  type: OrderStatusTypeEnum,
+  type: z.nativeEnum(OrderStatusEnum),
   name: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),

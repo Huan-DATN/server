@@ -1,6 +1,7 @@
 import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { MessageRes } from "../schemaValidations/common.schema";
+import { PlanOrderBodyType } from "../schemaValidations/request/plan-order";
 import {
   CheckoutOrderRes,
   OrderListRes,
@@ -30,6 +31,21 @@ export default class OrderController extends BaseController {
       this.createOrder,
     );
     this.router.put(`${this.path}/:id`, this.updateOrder);
+    this.router.post(
+      `${this.path}/:orderId/plan`,
+      checkLoggedInMiddleware,
+      this.createPlan,
+    );
+    this.router.put(
+      `${this.path}/:id/status`,
+      checkLoggedInMiddleware,
+      this.updateStatus,
+    );
+    this.router.put(
+      `${this.path}/:id/complete`,
+      checkLoggedInMiddleware,
+      this.completeOrder,
+    );
   }
 
   //#region Order
@@ -74,6 +90,8 @@ export default class OrderController extends BaseController {
       const orderId = Number(request.params.id);
       // Logic to get order by ID
       const order = await OrderService.getOrderById(orderId);
+
+      console.log(order);
 
       return response.json({
         message: "Get order by ID successfully",
@@ -150,4 +168,72 @@ export default class OrderController extends BaseController {
       next(error);
     }
   }
+
+  //#region make plan
+  public async createPlan(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) {
+    try {
+      const shopId = Number(request.headers.userId);
+      const orderId = Number(request.params.orderId);
+
+      const body = request.body as PlanOrderBodyType;
+
+      await OrderService.createPlan(shopId, orderId, body);
+
+      return response.json(
+        MessageRes.parse({
+          message: "Create plan successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+  //#endregion
+
+  // #region update status
+  public async updateStatus(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) {
+    try {
+      const orderId = Number(request.params.id);
+      const { statusId } = request.body;
+
+      // Logic to update order status
+      await OrderService.updateStatus(orderId, statusId);
+
+      return response.json({
+        message: "Update order status successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  //#endregion
+
+  // #region complete order
+  public async completeOrder(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) {
+    try {
+      const orderId = Number(request.params.id);
+
+      // Logic to complete order
+      await OrderService.completeOrder(orderId);
+
+      return response.json({
+        message: "Complete order successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  //#endregion
 }

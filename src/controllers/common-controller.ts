@@ -17,6 +17,7 @@ export default class CommonController extends BaseController {
     this.router.get(`${this.path}/cities`, this.getAllCities);
     this.router.get(`${this.path}/group-products`, this.getAllGroupProducts);
     this.router.get(`${this.path}/categories`, this.getAllCategories);
+    this.router.get(`${this.path}/status`, this.getAllStatus);
   }
 
   getAllCities = async (
@@ -87,6 +88,24 @@ export default class CommonController extends BaseController {
         CategoryListRes.parse({
           data: categories,
           message: "Categories fetched successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllStatus = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const status = await this.prisma.status.findMany({});
+      return response.send(
+        CategoryListRes.parse({
+          data: status,
+          message: "Status fetched successfully",
         }),
       );
     } catch (error) {
