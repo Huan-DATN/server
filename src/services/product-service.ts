@@ -108,7 +108,7 @@ const getProductById = async (id: number) => {
 const getProductsShop = async (
   id: number,
   { page, limit }: PaginationReqType,
-  isActive: boolean = true,
+  isActive: boolean,
 ) => {
   const [products, totalLength] = await Promise.all([
     prismaClient.product.findMany({
@@ -119,7 +119,7 @@ const getProductsShop = async (
       },
       where: {
         userId: id,
-        isActive: true,
+        isActive: isActive ? isActive : undefined,
       },
       include: {
         user: true,
@@ -183,11 +183,68 @@ const createProduct = async (
 
   return product;
 };
+
+const updateProductById = async (
+  id: number,
+  {
+    name,
+    description,
+    price,
+    cityId,
+    groupProductId,
+    categories,
+    images,
+    star,
+    quantity,
+  }: CreateProductBodyType,
+) => {
+  const product = await prismaClient.product.update({
+    where: {
+      id,
+    },
+    data: {
+      name,
+      description,
+      price,
+      cityId,
+      groupProductId,
+      quantity,
+      star,
+      categories: {
+        set: categories.map((id) => ({
+          id,
+        })),
+      },
+      images: {
+        set: images.map((id) => ({
+          id,
+        })),
+      },
+    },
+  });
+
+  return product;
+};
+
+const updateProductActive = async (id: number, isActive: boolean) => {
+  const product = await prismaClient.product.update({
+    where: {
+      id,
+    },
+    data: {
+      isActive,
+    },
+  });
+
+  return product;
+};
 const ProductService = {
   getAllProducts,
   getProductById,
   getProductsShop,
   createProduct,
+  updateProductById,
+  updateProductActive,
 };
 
 export default ProductService;

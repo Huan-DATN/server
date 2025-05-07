@@ -30,7 +30,8 @@ export default class ProductController extends BaseController {
       checkLoggedInMiddleware,
       this.createProduct,
     );
-    // this.router.put(`${this.path}/:id`, this.updateProductById);
+    this.router.put(`${this.path}/:id`, this.updateProductById);
+    this.router.patch(`${this.path}/:id`, this.updateProductActive);
     // this.router.delete(`${this.path}/:id`, this.deleteProductById);
   }
   //   }
@@ -99,6 +100,7 @@ export default class ProductController extends BaseController {
     try {
       const { id } = request.params;
       const { page, limit } = request.query;
+      console.log({ page, limit });
 
       const data = await ProductService.getProductsShop(
         Number(id),
@@ -106,6 +108,7 @@ export default class ProductController extends BaseController {
           page,
           limit,
         }),
+        true,
       );
 
       return response.status(200).json(
@@ -140,7 +143,7 @@ export default class ProductController extends BaseController {
           page,
           limit,
         }),
-        true,
+        false,
       );
 
       return response.status(200).json(
@@ -172,6 +175,56 @@ export default class ProductController extends BaseController {
         ProductRes.parse({
           data,
           message: "Product created successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+  // #endregion
+
+  // #region update Product
+  updateProductById = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { id } = request.params;
+      const data = await ProductService.updateProductById(
+        Number(id),
+        request.body,
+      );
+
+      return response.status(200).json(
+        ProductRes.parse({
+          data,
+          message: "Product updated successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // #region toggle Product status
+  updateProductActive = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { id } = request.params;
+      const { isActive } = request.body;
+      const data = await ProductService.updateProductActive(
+        Number(id),
+        isActive,
+      );
+
+      return response.status(200).json(
+        ProductRes.parse({
+          data,
+          message: "Product status updated successfully",
         }),
       );
     } catch (error) {
