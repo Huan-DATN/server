@@ -54,7 +54,7 @@ const getAllOrders = async (userId: number, { limit = 1, page = 10 }) => {
             status: true,
           },
           orderBy: {
-            statusId: "desc",
+            statusId: "asc",
           },
         },
         items: {
@@ -108,7 +108,7 @@ const getOrderById = async (orderId: number) => {
           status: true,
         },
         orderBy: {
-          statusId: "desc",
+          statusId: "asc",
         },
       },
       items: {

@@ -30,7 +30,6 @@ export default class UserController extends BaseController {
     );
     this.router.get(
       `${this.path}/:id`,
-      checkLoggedInMiddleware,
       this.getUserById,
     );
     this.router.put(

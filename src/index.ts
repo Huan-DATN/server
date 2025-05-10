@@ -7,6 +7,7 @@ import CommonController from "./controllers/common-controller";
 import MediaController from "./controllers/media-controller";
 import OrderController from "./controllers/order-controller";
 import ProductController from "./controllers/product-controller";
+import RatingController from "./controllers/rating-controller";
 import UserController from "./controllers/user-controller";
 
 dotenv.config();
@@ -22,6 +23,7 @@ const app = new App(
     new CartController(),
     new OrderController(),
     new CommonController(),
+    new RatingController(),
   ],
   port,
 );

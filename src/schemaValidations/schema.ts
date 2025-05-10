@@ -261,3 +261,81 @@ export const ImageSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
 });
+
+export const RatingSchema = z.object({
+  id: z.number().int(),
+  userId: z.number().int(),
+  productId: z.number().int(),
+  rating: z.number().int(),
+  comment: z.string().nullable().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  user: z
+    .object({
+      id: z.number().int(),
+      firstName: z.string().nullable().optional(),
+      lastName: z.string().nullable().optional(),
+      email: z.string().email(),
+      phone: z.string().nullable().optional(),
+      image: z
+        .object({
+          id: z.number().int(),
+          publicUrl: z.string(),
+        })
+        .nullable()
+        .optional(),
+    })
+    .optional(),
+  product: z
+    .object({
+      id: z.number().int(),
+      name: z.string(),
+      price: z.number(),
+      description: z.string().nullable().optional(),
+      images: z.array(
+        z.object({
+          id: z.number().int(),
+          publicUrl: z.string(),
+        }),
+      ),
+      user: z
+        .object({
+          id: z.number().int(),
+          shopName: z.string().nullable().optional(),
+          phone: z.string().nullable().optional(),
+          address: z.string().nullable().optional(),
+          image: z
+            .object({
+              id: z.number().int(),
+              publicUrl: z.string(),
+            })
+            .nullable()
+            .optional(),
+          city: z
+            .object({
+              id: z.number().int(),
+              name: z.string(),
+            })
+            .optional(),
+          categories: z
+            .array(
+              z.object({
+                id: z.number().int(),
+                name: z.string(),
+                isActive: z.boolean().default(true),
+              }),
+            )
+            .optional(),
+          groupProduct: z
+            .object({
+              id: z.number().int(),
+              name: z.string(),
+              image: z.string().nullable().optional(),
+              isActive: z.boolean().default(true),
+            })
+            .optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+});

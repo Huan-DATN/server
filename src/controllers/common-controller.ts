@@ -3,6 +3,7 @@ import {
   CategoryListRes,
   CityListRes,
   GroupProductsListRes,
+  StatusListRes,
 } from "../schemaValidations/response/common";
 import { BaseController } from "./abstractions/base-controller";
 export default class CommonController extends BaseController {
@@ -103,7 +104,7 @@ export default class CommonController extends BaseController {
     try {
       const status = await this.prisma.status.findMany({});
       return response.send(
-        CategoryListRes.parse({
+        StatusListRes.parse({
           data: status,
           message: "Status fetched successfully",
         }),

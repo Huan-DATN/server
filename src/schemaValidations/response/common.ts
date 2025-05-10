@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CategorySchema, CitySchema, GroupProductSchema } from "../schema";
+import { CategorySchema, CitySchema, GroupProductSchema, StatusSchema } from "../schema";
 
 export const GroupProductsListRes = z.object({
   data: z.array(GroupProductSchema),
@@ -20,3 +20,10 @@ export const CityListRes = z.object({
 });
 
 export type CityListResType = z.TypeOf<typeof CityListRes>;
+
+export const StatusListRes = z.object({
+  data: z.array(StatusSchema),
+  message: z.string(),
+});
+
+export type StatusListResType = z.TypeOf<typeof StatusListRes>;

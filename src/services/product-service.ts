@@ -7,6 +7,7 @@ import { NotFoundError } from "../utils/errors";
 const getAllProducts = async (
   { page, limit }: PaginationReqType,
   { name, categoryId, groupProductId, cityId }: SearchProductQueryType,
+  isActive: boolean = true,
 ) => {
   const validateCategoryId = categoryId
     ? {
@@ -53,6 +54,9 @@ const getAllProducts = async (
               mode: "insensitive",
             },
           },
+          {
+            isActive,
+          },
         ],
       },
       include: {
@@ -72,6 +76,9 @@ const getAllProducts = async (
               contains: name,
               mode: "insensitive",
             },
+          },
+          {
+            isActive,
           },
         ],
       },
