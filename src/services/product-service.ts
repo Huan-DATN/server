@@ -7,7 +7,14 @@ import { NotFoundError } from "../utils/errors";
 const getAllProducts = async (
   { page, limit }: PaginationReqType,
   { name, categoryId, groupProductId, cityId }: SearchProductQueryType,
-  isActive: boolean = true,
+  {
+    sortBy,
+    sortOrder,
+  }: {
+    sortBy: string;
+    sortOrder: string;
+  },
+  isActive: boolean | undefined,
 ) => {
   const validateCategoryId = categoryId
     ? {
@@ -42,7 +49,7 @@ const getAllProducts = async (
       skip: (page - 1) * limit,
       take: limit,
       orderBy: {
-        createdAt: "desc",
+        [sortBy]: sortOrder,
       },
       where: {
         AND: [
@@ -86,6 +93,7 @@ const getAllProducts = async (
   ]);
   const totalProducts = totalLength;
   const totalPages = Math.ceil(totalLength / limit);
+  console.log(totalProducts, totalPages);
   return {
     products,
     totalProducts,
@@ -115,18 +123,34 @@ const getProductById = async (id: number) => {
 const getProductsShop = async (
   id: number,
   { page, limit }: PaginationReqType,
-  isActive: boolean,
+  isActive: boolean | undefined,
+  { name, groupProductId, cityId }: SearchProductQueryType,
+  {
+    sortBy,
+    sortOrder,
+  }: {
+    sortBy: string;
+    sortOrder: string;
+  },
 ) => {
   const [products, totalLength] = await Promise.all([
     prismaClient.product.findMany({
       skip: (page - 1) * limit,
       take: limit,
       orderBy: {
-        createdAt: "desc",
+        [sortBy]: sortOrder,
       },
       where: {
         userId: id,
-        isActive: isActive ? isActive : undefined,
+        isActive,
+        ...(name
+          ? {
+              name: {
+                contains: name,
+                mode: "insensitive",
+              },
+            }
+          : {}),
       },
       include: {
         user: true,
@@ -138,6 +162,15 @@ const getProductsShop = async (
     prismaClient.product.count({
       where: {
         userId: id,
+        isActive,
+        ...(name
+          ? {
+              name: {
+                contains: name,
+                mode: "insensitive",
+              },
+            }
+          : {}),
       },
     }),
   ]);

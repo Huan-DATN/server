@@ -8,6 +8,7 @@ import MediaController from "./controllers/media-controller";
 import OrderController from "./controllers/order-controller";
 import ProductController from "./controllers/product-controller";
 import RatingController from "./controllers/rating-controller";
+import StatisticController from './controllers/statistic-controller';
 import UserController from "./controllers/user-controller";
 
 dotenv.config();
@@ -24,6 +25,7 @@ const app = new App(
     new OrderController(),
     new CommonController(),
     new RatingController(),
+    new StatisticController(),
   ],
   port,
 );

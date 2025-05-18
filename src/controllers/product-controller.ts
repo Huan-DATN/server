@@ -1,4 +1,5 @@
 import express from "express";
+import checkAdminMiddleware from "../middlewares/admin.middleware";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { PaginationReq } from "../schemaValidations/common.schema";
 import { SearchProductQuery } from "../schemaValidations/product.schema";
@@ -18,6 +19,11 @@ export default class ProductController extends BaseController {
 
   public initializeRoutes() {
     this.router.get(`${this.path}`, this.getAllProducts);
+    this.router.get(
+      `${this.path}/admin`,
+      checkAdminMiddleware,
+      this.getProductsAdmin,
+    );
     this.router.get(
       `${this.path}/me`,
       checkLoggedInMiddleware,
@@ -44,6 +50,8 @@ export default class ProductController extends BaseController {
     try {
       const { page, limit } = request.query;
       const { name, groupProductId, cityId } = request.query;
+      const { sortBy, sortOrder } = request.query;
+      const { isActive } = request.query;
 
       const data = await ProductService.getAllProducts(
         PaginationReq.parse({
@@ -55,6 +63,11 @@ export default class ProductController extends BaseController {
           groupProductId,
           cityId,
         }),
+        {
+          sortBy: (sortBy as string) || "createdAt",
+          sortOrder: (sortOrder as string) || "desc",
+        },
+        isActive !== undefined ? isActive === "true" : undefined,
       );
 
       return response.status(200).json(
@@ -100,7 +113,7 @@ export default class ProductController extends BaseController {
     try {
       const { id } = request.params;
       const { page, limit } = request.query;
-      console.log({ page, limit });
+      const { name, sortBy, sortOrder } = request.query;
 
       const data = await ProductService.getProductsShop(
         Number(id),
@@ -109,8 +122,14 @@ export default class ProductController extends BaseController {
           limit,
         }),
         true,
+        {
+          name: name as string,
+        },
+        {
+          sortBy: (sortBy as string) || "createdAt",
+          sortOrder: (sortOrder as string) || "desc",
+        },
       );
-
       return response.status(200).json(
         ProductListRes.parse({
           data: data.products,
@@ -136,6 +155,9 @@ export default class ProductController extends BaseController {
     try {
       const shopId = Number(request.headers.userId);
       const { page, limit } = request.query;
+      const { name } = request.query;
+      const { sortBy, sortOrder } = request.query;
+      const { isActive } = request.query;
 
       const data = await ProductService.getProductsShop(
         Number(shopId),
@@ -143,7 +165,14 @@ export default class ProductController extends BaseController {
           page,
           limit,
         }),
-        false,
+        isActive !== undefined ? isActive === "true" : undefined,
+        {
+          name: name as string,
+        },
+        {
+          sortBy: (sortBy as string) || "createdAt",
+          sortOrder: (sortOrder as string) || "desc",
+        },
       );
 
       return response.status(200).json(
@@ -225,6 +254,46 @@ export default class ProductController extends BaseController {
         ProductRes.parse({
           data,
           message: "Product status updated successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getProductsAdmin = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { page, limit } = request.query;
+      const { name, groupProductId, cityId } = request.query;
+      const { sortBy, sortOrder } = request.query;
+      const { isActive } = request.query;
+
+      const data = await ProductService.getAllProducts(
+        PaginationReq.parse({
+          page,
+          limit,
+        }),
+        {
+          name: name as string,
+        },
+        {
+          sortBy: (sortBy as string) || "createdAt",
+          sortOrder: (sortOrder as string) || "desc",
+        },
+        isActive !== undefined ? isActive === "true" : undefined,
+      );
+      return response.status(200).json(
+        ProductListRes.parse({
+          data: data.products,
+          meta: {
+            total: data.totalProducts,
+            totalPages: data.totalPages,
+          },
+          message: "Products fetched successfully",
         }),
       );
     } catch (error) {

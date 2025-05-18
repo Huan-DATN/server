@@ -54,11 +54,14 @@ export const UpdatePasswordBody = z.object({
   newPassword: z.string().min(6).max(256),
 });
 
-export const SearchUsersBody = z.object({
+export const SearchUserQuery = z.object({
   id: z.coerce.number().int().optional(),
   email: z.string().optional(),
   name: z.string().optional(),
   role: z.enum(["SELLER", "BUYER", "ADMIN"]).optional(),
+  isActive: z.coerce.boolean().optional(),
 });
+
+export type SearchUserQueryType = z.TypeOf<typeof SearchUserQuery>;
 
 export type UpdatePasswordBodyType = z.TypeOf<typeof UpdatePasswordBody>;

@@ -1,9 +1,8 @@
-import { z } from "zod";
 import prismaClient from "../database";
 import { PaginationReqType } from "../schemaValidations/common.schema";
 import { ShopsListResType } from "../schemaValidations/response/user";
 import {
-  SearchUsersBody,
+  SearchUserQueryType,
   UpdateMeBodyType,
   UpdatePasswordBodyType,
 } from "../schemaValidations/user.schema";
@@ -141,7 +140,7 @@ const getAllUsers = async (
     page: number;
     limit: number;
   },
-  searchBody: z.TypeOf<typeof SearchUsersBody>,
+  searchBody: SearchUserQueryType,
 ) => {
   const preparedWhereCondition = [
     {
@@ -165,7 +164,12 @@ const getAllUsers = async (
     {
       role: searchBody.role,
     },
+    {
+      isActive:
+        searchBody.isActive !== undefined ? searchBody.isActive : undefined,
+    },
   ];
+
   const [users, totalLength] = await Promise.all([
     prismaClient.user.findMany({
       skip: (page - 1) * limit,

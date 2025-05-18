@@ -44,6 +44,7 @@ export default class RatingController extends BaseController {
     );
     this.router.post(
       `${this.path}/product/:orderId/:productId/`,
+      checkLoggedInMiddleware,
       this.createRating,
     );
   }

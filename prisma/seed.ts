@@ -73,6 +73,9 @@ async function main() {
       email: `seller${i + 1}@example.com`,
       firstName: `Seller ${i + 1}`,
       role: "SELLER",
+      shopName: `Shop ${i + 1}`,
+      address: `Address ${i + 1}`,
+      phone: `0909090909`,
       password: hashedPasswordDefault,
     });
   }
@@ -112,7 +115,7 @@ async function main() {
       data: {
         name: `Product ${i + 1}`,
         description: `Description for Product ${i + 1}`,
-        price: Math.floor(Math.random() * 100) + 1,
+        price: (Math.floor(Math.random() * 100) + 1) * 1000,
         quantity: Math.floor(Math.random() * 100) + 1,
         groupProductId: randomGroupProduct.id,
         cityId: randomCity.id,

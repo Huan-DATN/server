@@ -1,8 +1,9 @@
 import express from "express";
+import checkAdminMiddleware from "../middlewares/admin.middleware";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { PaginationReq } from "../schemaValidations/common.schema";
 import { ShopsListRes } from "../schemaValidations/response/user";
-import { SearchUsersBody, UserRes } from "../schemaValidations/user.schema";
+import { SearchUserQuery, UserRes } from "../schemaValidations/user.schema";
 import UserService from "../services/user-service";
 import { EntityError } from "../utils/errors";
 import { BaseController } from "./abstractions/base-controller";
@@ -28,16 +29,13 @@ export default class UserController extends BaseController {
       checkLoggedInMiddleware,
       this.updatePassword,
     );
-    this.router.get(
-      `${this.path}/:id`,
-      this.getUserById,
-    );
+    this.router.get(`${this.path}/:id`, this.getUserById);
     this.router.put(
       `${this.path}/:id`,
       checkLoggedInMiddleware,
       this.updateUserById,
     );
-    this.router.get(`${this.path}`, checkLoggedInMiddleware, this.getAllUsers);
+    this.router.get(`${this.path}`, checkAdminMiddleware, this.getAllUsers);
   }
 
   //#region me
@@ -172,18 +170,28 @@ export default class UserController extends BaseController {
   ) => {
     try {
       const { page, limit } = request.query;
-      const users = await UserService.getAllUsers(
+      const { role, isActive, id, email, name } = request.query;
+
+      const { users, totalPages, totalUsers } = await UserService.getAllUsers(
         PaginationReq.parse({
           page,
           limit,
         }),
-        SearchUsersBody.parse(request.body),
+        SearchUserQuery.parse({
+          role: role as string,
+          isActive: isActive !== undefined ? isActive === "true" : undefined,
+          id: id as string,
+          email: email as string,
+          name: name as string,
+        }),
       );
 
       return response.send({
         message: "Fetch data successfully",
-        data: {
-          ...users,
+        data: users,
+        meta: {
+          totalPages,
+          total: totalUsers,
         },
       });
     } catch (error) {

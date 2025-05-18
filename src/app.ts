@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import path from "path";
 import { corsOptions } from "./config/cors";
 import { BaseController } from "./controllers/abstractions/base-controller";
 import errorMiddleware from "./middlewares/error.middleware";
@@ -27,6 +28,8 @@ class App {
     this.app.use(express.json());
     this.app.use(bodyParser.json());
     this.app.use(cookieParser());
+    // Serve static files from the public directory
+    this.app.use(express.static(path.join(__dirname, 'public')));
   }
 
   private initializeErrorHandling() {

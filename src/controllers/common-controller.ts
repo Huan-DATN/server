@@ -5,6 +5,7 @@ import {
   GroupProductsListRes,
   StatusListRes,
 } from "../schemaValidations/response/common";
+import { ProductListRes } from "../schemaValidations/response/product";
 import { BaseController } from "./abstractions/base-controller";
 export default class CommonController extends BaseController {
   public path = "/common";
@@ -19,6 +20,7 @@ export default class CommonController extends BaseController {
     this.router.get(`${this.path}/group-products`, this.getAllGroupProducts);
     this.router.get(`${this.path}/categories`, this.getAllCategories);
     this.router.get(`${this.path}/status`, this.getAllStatus);
+    this.router.get(`${this.path}/products/newest`, this.getNewestProducts);
   }
 
   getAllCities = async (
@@ -107,6 +109,38 @@ export default class CommonController extends BaseController {
         StatusListRes.parse({
           data: status,
           message: "Status fetched successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getNewestProducts = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    const { take } = request.query;
+    try {
+      const products = await this.prisma.product.findMany({
+        where: {
+          isActive: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: take ? parseInt(take as string) : 8,
+        include: {
+          images: true,
+          user: true,
+        },
+      });
+      return response.send(
+        ProductListRes.parse({
+          data: products,
+
+          message: "Newest products fetched successfully",
         }),
       );
     } catch (error) {
