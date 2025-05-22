@@ -3,12 +3,13 @@ import App from "./app";
 import AuthController from "./controllers/auth-controller";
 import CartController from "./controllers/cart-controller";
 import ProductCategoryController from "./controllers/category-controller";
+import ChatController from "./controllers/chat-controller";
 import CommonController from "./controllers/common-controller";
 import MediaController from "./controllers/media-controller";
 import OrderController from "./controllers/order-controller";
 import ProductController from "./controllers/product-controller";
 import RatingController from "./controllers/rating-controller";
-import StatisticController from './controllers/statistic-controller';
+import StatisticController from "./controllers/statistic-controller";
 import UserController from "./controllers/user-controller";
 
 dotenv.config();
@@ -26,6 +27,7 @@ const app = new App(
     new CommonController(),
     new RatingController(),
     new StatisticController(),
+    new ChatController(),
   ],
   port,
 );

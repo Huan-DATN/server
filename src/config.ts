@@ -23,6 +23,7 @@ const configSchema = z.object({
   CLOUDINARY_BASE_URL: z.string().default(""),
   IS_PRODUCTION: z.coerce.boolean().default(false),
   PRODUCTION_URL: z.string().default(""),
+  CHATBOT_URL: z.string().default("http://localhost:5000"),
 });
 
 const configServer = configSchema.safeParse(process.env);
