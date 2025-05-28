@@ -339,3 +339,18 @@ export const RatingSchema = z.object({
     })
     .optional(),
 });
+
+export const CarouselItemSchema = z.object({
+  id: z.number().int(),
+  title: z.string(),
+  imageId: z.number().int(),
+  linkUrl: z.string(),
+  order: z.number().int(),
+  isActive: z.boolean().default(true),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  image: z.object({
+    id: z.number().int(),
+    publicUrl: z.string(),
+  }),
+});

@@ -30,11 +30,7 @@ export default class UserController extends BaseController {
       this.updatePassword,
     );
     this.router.get(`${this.path}/:id`, this.getUserById);
-    this.router.put(
-      `${this.path}/:id`,
-      checkLoggedInMiddleware,
-      this.updateUserById,
-    );
+    this.router.put(`${this.path}/:id`, this.updateUserById);
     this.router.get(`${this.path}`, checkAdminMiddleware, this.getAllUsers);
   }
 

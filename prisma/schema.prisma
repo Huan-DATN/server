@@ -197,9 +197,10 @@ model Image {
   updatedAt DateTime @updatedAt
   productId Int?
 
-  product      Product?      @relation(fields: [productId], references: [id])
+  product      Product?       @relation(fields: [productId], references: [id])
   user         User?
   groupProduct GroupProduct?
+  CarouselItem CarouselItem[]
 }
 
 model Rating {
@@ -236,4 +237,17 @@ model UserChat {
 
   user               User               @relation(fields: [userId], references: [id])
   ChatMessageHistory ChatMessageHistory @relation(fields: [session_id], references: [id])
+}
+
+model CarouselItem {
+  id        Int      @id @default(autoincrement())
+  title     String
+  imageId   Int
+  linkUrl   String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  image Image? @relation(fields: [imageId], references: [id])
 }

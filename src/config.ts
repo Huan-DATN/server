@@ -24,6 +24,7 @@ const configSchema = z.object({
   IS_PRODUCTION: z.coerce.boolean().default(false),
   PRODUCTION_URL: z.string().default(""),
   CHATBOT_URL: z.string().default("http://localhost:5000"),
+  RECOMMENDATION_URL: z.string().default("http://localhost:6000"),
 });
 
 const configServer = configSchema.safeParse(process.env);

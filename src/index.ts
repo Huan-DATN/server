@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import App from "./app";
 import AuthController from "./controllers/auth-controller";
+import CarouselController from "./controllers/carousel-controller";
 import CartController from "./controllers/cart-controller";
 import ProductCategoryController from "./controllers/category-controller";
 import ChatController from "./controllers/chat-controller";
@@ -28,6 +29,7 @@ const app = new App(
     new RatingController(),
     new StatisticController(),
     new ChatController(),
+    new CarouselController(),
   ],
   port,
 );

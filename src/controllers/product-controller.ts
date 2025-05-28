@@ -1,4 +1,6 @@
+import axios from "axios";
 import express from "express";
+import envConfig from "../config";
 import checkAdminMiddleware from "../middlewares/admin.middleware";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { PaginationReq } from "../schemaValidations/common.schema";
@@ -38,6 +40,7 @@ export default class ProductController extends BaseController {
     );
     this.router.put(`${this.path}/:id`, this.updateProductById);
     this.router.patch(`${this.path}/:id`, this.updateProductActive);
+    this.router.get(`${this.path}/recommend/:id`, this.getProductsRecommend);
     // this.router.delete(`${this.path}/:id`, this.deleteProductById);
   }
   //   }
@@ -293,6 +296,39 @@ export default class ProductController extends BaseController {
             total: data.totalProducts,
             totalPages: data.totalPages,
           },
+          message: "Products fetched successfully",
+        }),
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getProductsRecommend = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { id } = request.params;
+      const { limit } = request.query;
+
+      const res = await axios.get(
+        `${envConfig.RECOMMENDATION_URL}/api/recommend?product_id=${id}&num=${limit}`,
+      );
+
+      const { data } = res.data;
+
+      const products = await Promise.all(
+        data.map(
+          async (product: any) =>
+            await ProductService.getProductById(product.id),
+        ),
+      );
+
+      return response.status(200).json(
+        ProductListRes.parse({
+          data: products,
           message: "Products fetched successfully",
         }),
       );
