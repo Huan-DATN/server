@@ -29,6 +29,13 @@ export class NotFoundError extends Error {
   }
 }
 
+export class ConflictError extends Error {
+  status: number = 409;
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class StatusError extends Error {
   status: number;
   constructor({ message, status }: { message: string; status: number }) {
