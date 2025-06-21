@@ -23,6 +23,13 @@ export default async function checkLoggedInMiddleware(
 
     const user = session_row.user;
     request.headers.userId = user.id.toString();
+
+    // Add user object to request
+    request.user = {
+      id: user.id,
+      role: user.role,
+    };
+
     next();
   } catch (error) {
     next(error);

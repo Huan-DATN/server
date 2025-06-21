@@ -27,6 +27,13 @@ export default async function checkAdminMiddleware(
     }
 
     request.headers.userId = user.id.toString();
+
+    // Add user object to request
+    request.user = {
+      id: user.id,
+      role: user.role,
+    };
+
     next();
   } catch (error) {
     next(error);
