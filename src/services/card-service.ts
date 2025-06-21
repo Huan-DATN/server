@@ -199,12 +199,27 @@ const deleteCard = async (id: number, userId: number) => {
   return { success: true };
 };
 
+const getCardByShopId = async (shopId: number) => {
+  const cards = await prismaClient.cardInfo.findMany({
+    where: {
+      userId: shopId,
+      isActive: true,
+    },
+    include: {
+      image: true,
+    },
+  });
+
+  return cards;
+};
+
 const CardService = {
   createCard,
   getCardById,
   getUserCards,
   updateCard,
   deleteCard,
+  getCardByShopId,
 };
 
 export default CardService;

@@ -118,6 +118,7 @@ export const OrderDetailSchema = z.object({
   total: z.number(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  paymentMethod: z.enum(["BANK_TRANSFER", "CASH"]).nullable().optional(),
 
   shop: z.object({
     id: z.number().int(),
@@ -167,6 +168,18 @@ export const OrderDetailSchema = z.object({
         .optional(),
     }),
   ),
+  payment: z
+    .object({
+      id: z.number().int(),
+      amount: z.number(),
+      createdAt: z.date(),
+      updatedAt: z.date(),
+      image: z.object({
+        id: z.number().int(),
+        publicUrl: z.string(),
+      }),
+    })
+    .optional(),
   OrderStatus: z.array(
     z.object({
       id: z.number().int(),

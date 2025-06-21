@@ -50,6 +50,12 @@ export default class CardController extends BaseController {
       checkLoggedInMiddleware,
       this.deleteCard,
     );
+
+    this.router.get(
+      `${this.path}/shop/:shopId`,
+      checkLoggedInMiddleware,
+      this.getCardByShopId,
+    );
   }
 
   private createCard = async (
@@ -173,6 +179,26 @@ export default class CardController extends BaseController {
       return response.status(StatusCodes.OK).json({
         message: "Card deleted successfully",
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private getCardByShopId = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const { shopId } = request.params;
+      const cards = await CardService.getCardByShopId(Number(shopId));
+
+      return response.status(StatusCodes.OK).json(
+        CardListResponse.parse({
+          data: cards,
+          message: "Cards retrieved successfully",
+        }),
+      );
     } catch (error) {
       next(error);
     }

@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { OrderStatusEnum } from "../constants/orderStatusEnum";
 import prismaClient from "../database";
+import { CreateOrderBodyType } from "../schemaValidations/request/create-order";
 import { PlanOrderBodyType } from "../schemaValidations/request/plan-order";
 import { CheckoutOrderResType } from "../schemaValidations/response/order";
 import { NotFoundError, StatusError } from "../utils/errors";
@@ -123,10 +124,26 @@ const getOrderById = async (orderId: number) => {
     },
   });
 
-  return order;
+  const payment = await prismaClient.payment.findUnique({
+    where: {
+      orderId: orderId,
+    },
+    include: {
+      image: true,
+    },
+  });
+
+  return {
+    ...order,
+    payment,
+  };
 };
 
-const createOrder = async (userId: number, shopId: number) => {
+const createOrder = async (
+  userId: number,
+  shopId: number,
+  body: CreateOrderBodyType,
+) => {
   const user = await UserService.getUserById(userId);
 
   if (user.address === null) {
@@ -208,6 +225,7 @@ const createOrder = async (userId: number, shopId: number) => {
           unitPrice: item.product.price,
         })),
       },
+      paymentMethod: body.paymentMethod,
     },
     include: {
       items: {
@@ -365,6 +383,15 @@ const completeOrder = async (orderId: number) => {
   if (!order) {
     throw new NotFoundError("Order not found");
   }
+
+  await prismaClient.orderDetail.update({
+    where: {
+      id: orderId,
+    },
+    data: {
+      isDone: true,
+    },
+  });
 
   await prismaClient.orderStatus.create({
     data: {

@@ -1,6 +1,7 @@
 import express from "express";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
 import { MessageRes } from "../schemaValidations/common.schema";
+import { CreateOrderBodyType } from "../schemaValidations/request/create-order";
 import { PlanOrderBodyType } from "../schemaValidations/request/plan-order";
 import {
   CheckoutOrderRes,
@@ -88,10 +89,7 @@ export default class OrderController extends BaseController {
   ) {
     try {
       const orderId = Number(request.params.id);
-      // Logic to get order by ID
       const order = await OrderService.getOrderById(orderId);
-
-      console.log(order);
 
       return response.json({
         message: "Get order by ID successfully",
@@ -111,14 +109,15 @@ export default class OrderController extends BaseController {
       const userId = Number(request.headers.userId);
       const shopId = Number(request.params.shopId);
 
-      // Logic to create an order
-      const order = await OrderService.createOrder(userId, shopId);
+      const body = request.body as CreateOrderBodyType;
 
-      return response.json(
-        MessageRes.parse({
-          message: "Create order successfully",
-        }),
-      );
+      // Logic to create an order
+      const order = await OrderService.createOrder(userId, shopId, body);
+
+      return response.json({
+        message: "Create order successfully",
+        data: order,
+      });
     } catch (error) {
       next(error);
     }
