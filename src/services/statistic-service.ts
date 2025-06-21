@@ -62,7 +62,7 @@ const getMonthlyStatistics = async (
     const revenue = monthOrders.reduce((sum, order) => sum + order.total, 0);
 
     return {
-      date: format(month, "MM/yy"),
+      date: format(month, "MM"),
       "Đơn hàng": monthOrders.length,
       "Doanh thu": revenue,
     };
@@ -128,6 +128,9 @@ const getDailyStatisticsForMonth = async (
 
     // Filter orders for this day
     const dayOrders = orders.filter((order) => {
+      if (!order.isDone) {
+        return false;
+      }
       const orderDate = new Date(order.createdAt);
       return orderDate >= dayStart && orderDate <= dayEnd;
     });
@@ -138,7 +141,7 @@ const getDailyStatisticsForMonth = async (
     return {
       date: format(day, "dd/MM"),
       orderCount: dayOrders.length,
-      revenue,
+      "Doanh thu": revenue,
     };
   });
 
@@ -250,7 +253,9 @@ const getDashboardCardStats = async (shopId: number) => {
   });
 
   // Calculate total revenue
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = orders
+    .filter((order) => order.isDone)
+    .reduce((sum, order) => sum + order.total, 0);
 
   // Count orders by status
   const completedOrders = orders.filter((order) => {
