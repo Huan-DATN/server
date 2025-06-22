@@ -56,8 +56,7 @@ export const UpdatePasswordBody = z.object({
 
 export const SearchUserQuery = z.object({
   id: z.coerce.number().int().optional(),
-  email: z.string().optional(),
-  name: z.string().optional(),
+  search: z.string().optional(),
   role: z.enum(["SELLER", "BUYER", "ADMIN"]).optional(),
   isActive: z.coerce.boolean().optional(),
 });

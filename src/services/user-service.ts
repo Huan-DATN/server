@@ -1,5 +1,6 @@
 import prismaClient from "../database";
 import { PaginationReqType } from "../schemaValidations/common.schema";
+import { CreateUserType } from "../schemaValidations/request/user";
 import { ShopsListResType } from "../schemaValidations/response/user";
 import {
   SearchUserQueryType,
@@ -141,6 +142,13 @@ const getAllUsers = async (
     limit: number;
   },
   searchBody: SearchUserQueryType,
+  {
+    orderBy = "createdAt",
+    order = "desc",
+  }: {
+    orderBy: string;
+    order: string;
+  },
 ) => {
   const preparedWhereCondition = [
     {
@@ -148,17 +156,17 @@ const getAllUsers = async (
     },
     {
       email: {
-        contains: searchBody.email,
+        contains: searchBody.search,
       },
     },
     {
       firstName: {
-        contains: searchBody.name,
+        contains: searchBody.search,
       },
     },
     {
       lastName: {
-        contains: searchBody.name,
+        contains: searchBody.search,
       },
     },
     {
@@ -175,15 +183,18 @@ const getAllUsers = async (
       skip: (page - 1) * limit,
       take: limit,
       orderBy: {
-        createdAt: "desc",
+        [orderBy]: order,
       },
       where: {
-        AND: preparedWhereCondition,
+        OR: preparedWhereCondition,
+      },
+      include: {
+        image: true,
       },
     }),
     prismaClient.user.count({
       where: {
-        AND: preparedWhereCondition,
+        OR: preparedWhereCondition,
       },
     }),
   ]);
@@ -288,6 +299,33 @@ const getShops = async (
   };
 };
 
+const createUser = async (data: CreateUserType) => {
+  const userData = { ...data };
+
+  // Create user with image if provided
+  const user = await prismaClient.user.create({
+    data: {
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      password: await hashPassword(userData.password),
+      phone: userData.phone,
+      address: userData.address,
+      shopName: userData.shopName,
+      role: userData.role,
+      isActive: userData.isActive,
+      ...(userData.imageId
+        ? { image: { connect: { id: userData.imageId } } }
+        : {}),
+    },
+    include: {
+      image: true,
+    },
+  });
+
+  return user;
+};
+
 const UserService = {
   getMe,
   updateMe,
@@ -297,5 +335,6 @@ const UserService = {
   getAllUsers,
   deleteUserById,
   getShops,
+  createUser,
 };
 export default UserService;

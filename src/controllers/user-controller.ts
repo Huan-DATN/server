@@ -1,7 +1,8 @@
 import express from "express";
 import checkAdminMiddleware from "../middlewares/admin.middleware";
 import checkLoggedInMiddleware from "../middlewares/auth.middleware";
-import { PaginationReq } from "../schemaValidations/common.schema";
+import { MessageRes, PaginationReq } from "../schemaValidations/common.schema";
+import { CreateUserSchema } from "../schemaValidations/request/user";
 import { ShopsListRes } from "../schemaValidations/response/user";
 import { SearchUserQuery, UserRes } from "../schemaValidations/user.schema";
 import UserService from "../services/user-service";
@@ -32,7 +33,33 @@ export default class UserController extends BaseController {
     this.router.get(`${this.path}/:id`, this.getUserById);
     this.router.put(`${this.path}/:id`, this.updateUserById);
     this.router.get(`${this.path}`, checkAdminMiddleware, this.getAllUsers);
+    this.router.put(
+      `${this.path}/:id`,
+      checkAdminMiddleware,
+      this.updateUserById,
+    );
+    this.router.post(`${this.path}`, checkAdminMiddleware, this.createUser);
   }
+  createUser = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const data = CreateUserSchema.parse(request.body);
+
+      const user = await UserService.createUser(data);
+
+      return response.send(
+        MessageRes.parse({
+          message: "Create user successfully",
+        }),
+      );
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  };
 
   //#region me
   getMe = async (
@@ -166,7 +193,9 @@ export default class UserController extends BaseController {
   ) => {
     try {
       const { page, limit } = request.query;
-      const { role, isActive, id, email, name } = request.query;
+      const { role, isActive, id, search, orderBy, order } = request.query;
+
+      console.log(orderBy, order);
 
       const { users, totalPages, totalUsers } = await UserService.getAllUsers(
         PaginationReq.parse({
@@ -177,9 +206,12 @@ export default class UserController extends BaseController {
           role: role as string,
           isActive: isActive !== undefined ? isActive === "true" : undefined,
           id: id as string,
-          email: email as string,
-          name: name as string,
+          search: search as string,
         }),
+        {
+          orderBy: orderBy as string,
+          order: order as string,
+        },
       );
 
       return response.send({
