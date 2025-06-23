@@ -566,6 +566,64 @@ const getAdminStoreStats = async () => {
   };
 };
 
+const getAdminUserMonthlyStatistics = async (
+  year: number = new Date().getFullYear(),
+) => {
+  const startDate = new Date(year, 0, 1); // January 1st
+  const endDate = new Date(year, 11, 31); // December 31st
+
+  const monthIntervals = eachMonthOfInterval({
+    start: startDate,
+    end: endDate,
+  });
+
+  const monthlyStats = await Promise.all(
+    monthIntervals.map(async (month) => {
+      const monthStart = startOfMonth(month);
+      const monthEnd = endOfMonth(month);
+
+      const [totalShops, totalBuyers, totalAdmins] = await Promise.all([
+        prismaClient.user.count({
+          where: {
+            role: "SELLER",
+            createdAt: {
+              gte: monthStart,
+              lte: monthEnd,
+            },
+          },
+        }),
+        prismaClient.user.count({
+          where: {
+            role: "BUYER",
+            createdAt: {
+              gte: monthStart,
+              lte: monthEnd,
+            },
+          },
+        }),
+        prismaClient.user.count({
+          where: {
+            role: "ADMIN",
+            createdAt: {
+              gte: monthStart,
+              lte: monthEnd,
+            },
+          },
+        }),
+      ]);
+
+      return {
+        month: format(month, "MM/yyyy"),
+        "Người mua": totalBuyers,
+        "Người bán": totalShops,
+        "Quản trị viên": totalAdmins,
+      };
+    }),
+  );
+
+  return monthlyStats;
+};
+
 const StatisticService = {
   getOrderStatistic,
   getMonthlyStatistics,
@@ -576,6 +634,7 @@ const StatisticService = {
   getAdminDashboardStats,
   getAdminMonthlyStatistics,
   getAdminStoreStats,
+  getAdminUserMonthlyStatistics,
 };
 
 export default StatisticService;

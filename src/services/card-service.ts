@@ -81,7 +81,6 @@ const getUserCards = async (userId: number) => {
   const cards = await prismaClient.cardInfo.findMany({
     where: {
       userId,
-      isActive: true,
     },
     include: {
       image: true,

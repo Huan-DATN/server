@@ -66,6 +66,11 @@ export default class StatisticController extends BaseController {
       checkAdminMiddleware,
       this.getAdminStoreStats,
     );
+    this.router.get(
+      `${this.path}/admin/user/monthly`,
+      checkAdminMiddleware,
+      this.getAdminUserMonthlyStatistics,
+    );
   }
 
   getOrderStatistic = async (
@@ -244,6 +249,26 @@ export default class StatisticController extends BaseController {
       return response.status(200).json({
         message: "Dashboard statistics fetched successfully",
         data: formattedStats,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAdminUserMonthlyStatistics = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+  ) => {
+    try {
+      const query = request.query as unknown as MonthlyStatisticsQueryType;
+      const monthlyStats = await StatisticService.getAdminUserMonthlyStatistics(
+        query.year,
+      );
+
+      return response.status(200).json({
+        message: "Admin user monthly statistics fetched successfully",
+        data: monthlyStats,
       });
     } catch (error) {
       next(error);

@@ -51,6 +51,8 @@ export const SearchProductQuery = z
     name: z.string().optional(),
     groupProductId: z.coerce.number().optional(),
     cityId: z.coerce.number().optional(),
+    minPrice: z.coerce.number().optional(),
+    maxPrice: z.coerce.number().optional(),
   })
   .passthrough();
 export type SearchProductQueryType = z.infer<typeof SearchProductQuery>;

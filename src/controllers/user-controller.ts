@@ -195,8 +195,6 @@ export default class UserController extends BaseController {
       const { page, limit } = request.query;
       const { role, isActive, id, search, orderBy, order } = request.query;
 
-      console.log(orderBy, order);
-
       const { users, totalPages, totalUsers } = await UserService.getAllUsers(
         PaginationReq.parse({
           page,

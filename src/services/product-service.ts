@@ -14,6 +14,7 @@ const getAllProducts = async (
     sortBy: string;
     sortOrder: string;
   },
+  { minPrice, maxPrice }: SearchProductQueryType,
   isActive: boolean | undefined,
 ) => {
   const validateCategoryId = categoryId
@@ -64,6 +65,12 @@ const getAllProducts = async (
           {
             isActive,
           },
+          {
+            price: {
+              gte: minPrice,
+              lte: maxPrice,
+            },
+          },
         ],
       },
       include: {
@@ -87,13 +94,18 @@ const getAllProducts = async (
           {
             isActive,
           },
+          {
+            price: {
+              gte: minPrice,
+              lte: maxPrice,
+            },
+          },
         ],
       },
     }),
   ]);
   const totalProducts = totalLength;
   const totalPages = Math.ceil(totalLength / limit);
-  console.log(totalProducts, totalPages);
   return {
     products,
     totalProducts,

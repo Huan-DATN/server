@@ -55,6 +55,7 @@ export default class ProductController extends BaseController {
       const { name, groupProductId, cityId } = request.query;
       const { sortBy, sortOrder } = request.query;
       const { isActive } = request.query;
+      const { minPrice, maxPrice } = request.query;
 
       const data = await ProductService.getAllProducts(
         PaginationReq.parse({
@@ -69,6 +70,10 @@ export default class ProductController extends BaseController {
         {
           sortBy: (sortBy as string) || "createdAt",
           sortOrder: (sortOrder as string) || "desc",
+        },
+        {
+          minPrice: minPrice ? Number(minPrice) : undefined,
+          maxPrice: maxPrice ? Number(maxPrice) : undefined,
         },
         isActive !== undefined ? isActive === "true" : undefined,
       );
@@ -274,6 +279,7 @@ export default class ProductController extends BaseController {
       const { name, groupProductId, cityId } = request.query;
       const { sortBy, sortOrder } = request.query;
       const { isActive } = request.query;
+      const { minPrice, maxPrice } = request.query;
 
       const data = await ProductService.getAllProducts(
         PaginationReq.parse({
@@ -286,6 +292,10 @@ export default class ProductController extends BaseController {
         {
           sortBy: (sortBy as string) || "createdAt",
           sortOrder: (sortOrder as string) || "desc",
+        },
+        {
+          minPrice: minPrice ? Number(minPrice) : undefined,
+          maxPrice: maxPrice ? Number(maxPrice) : undefined,
         },
         isActive !== undefined ? isActive === "true" : undefined,
       );
