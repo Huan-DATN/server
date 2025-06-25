@@ -124,6 +124,18 @@ const getOrderById = async (orderId: number) => {
     },
   });
 
+  if (!order) {
+    throw new NotFoundError("Order not found");
+  }
+
+  const comment = await prismaClient.rating.findFirst({
+    where: {
+      orderId: orderId,
+    },
+  });
+
+  console.log("comment", comment);
+
   const payment = await prismaClient.payment.findUnique({
     where: {
       orderId: orderId,
@@ -136,6 +148,7 @@ const getOrderById = async (orderId: number) => {
   return {
     ...order,
     payment,
+    isCommented: !!comment,
   };
 };
 
