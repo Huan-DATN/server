@@ -35,6 +35,7 @@ const getMonthlyStatistics = async (
         gte: startDate,
         lte: endDate,
       },
+      isDone: true,
     },
     include: {
       items: true,
