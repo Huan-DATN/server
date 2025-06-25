@@ -9,6 +9,8 @@ export default async function checkAdminMiddleware(
 ) {
   try {
     const sessionToken = request.headers.authorization?.split(" ")[1];
+    console.log("sessionToken", sessionToken);
+    console.log("request.headers", request.headers);
 
     if (!sessionToken) throw new ForbiddenError("Admin access required");
     const session_row = await prismaClient.session.findUnique({
