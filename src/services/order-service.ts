@@ -134,8 +134,6 @@ const getOrderById = async (orderId: number) => {
     },
   });
 
-  console.log("comment", comment);
-
   const payment = await prismaClient.payment.findUnique({
     where: {
       orderId: orderId,

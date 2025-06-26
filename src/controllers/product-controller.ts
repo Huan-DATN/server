@@ -208,6 +208,10 @@ export default class ProductController extends BaseController {
       const shopId = Number(request.headers.userId);
       const data = await ProductService.createProduct(shopId, request.body);
 
+      const res = await axios.post(
+        `${envConfig.RECOMMENDATION_URL}/api/refresh`,
+      );
+
       return response.status(201).json(
         ProductRes.parse({
           data,
@@ -231,6 +235,10 @@ export default class ProductController extends BaseController {
       const data = await ProductService.updateProductById(
         Number(id),
         request.body,
+      );
+
+      const res = await axios.post(
+        `${envConfig.RECOMMENDATION_URL}/api/refresh`,
       );
 
       return response.status(200).json(
